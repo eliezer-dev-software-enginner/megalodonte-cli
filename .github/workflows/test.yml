@@ -1,0 +1,32 @@
+name: Test CLI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install .
+      - run: python -m unittest discover -s tests -v
+      - name: Check installed command and bundled assets
+        run: |
+          megalodonte --help
+          python - <<'PY'
+          from importlib.resources import files
+          assets = files('megalodonte_cli').joinpath('assets')
+          for path in ('starter-icon.png', 'package.py', 'gradlew', 'gradlew.bat',
+                       'gradle/wrapper/gradle-wrapper.jar',
+                       'gradle/wrapper/gradle-wrapper.properties'):
+              assert assets.joinpath(path).is_file(), path
+          PY
