@@ -23,6 +23,28 @@ class NewApplicationTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 MODULE.create("sample-jsonc", "jsonc", "Duplicate", root)
 
+    def test_android_modes_use_android_bridge_without_javafx(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for mode in ("native", "jsonc"):
+                app = MODULE.create(f"android-{mode}", mode, f"Android {mode}", root, platform="android")
+                settings = (app / "settings.gradle.kts").read_text()
+                build = (app / "app/build.gradle.kts").read_text()
+                self.assertIn('include(":app", ":framework-core", ":android-bridge")', settings)
+                self.assertIn('id("com.android.application")', build)
+                self.assertNotIn('implementation("org.openjfx', build)
+                self.assertFalse((app / "packaging.toml").exists())
+                self.assertTrue((app / ".github/workflows/android.yml").is_file())
+                self.assertEqual((app / "app/src/main/assets/views/home.view.jsonc").exists(), mode == "jsonc")
+                if mode == "jsonc":
+                    view = (app / "app/src/main/assets/views/home.view.jsonc").read_text()
+                    activity = (app / "app/src/main/java/megalodonte/app/android_jsonc/MainActivity.java").read_text()
+                    self.assertIn('"action": "start"', view)
+                    self.assertIn('"bind": "message"', view)
+                    self.assertIn('screen.setState("message", "Tudo pronto!")', activity)
+                self.assertEqual((app / "app/src/main/java/megalodonte/app/android_native/HomeScreen.java").exists(),
+                                 mode == "native")
+
 
 if __name__ == "__main__":
     unittest.main()

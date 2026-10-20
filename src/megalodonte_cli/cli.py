@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from xml.sax.saxutils import escape
 
 
 ASSETS = files("megalodonte_cli").joinpath("assets")
@@ -51,15 +52,20 @@ def write(path: Path, content: str) -> None:
     path.write_text(content.rstrip() + "\n", encoding="utf-8")
 
 
-def create(name: str, mode: str, display_name: str, output_root: Path, workspace: Path | None = None) -> Path:
+def create(name: str, mode: str, display_name: str, output_root: Path,
+           workspace: Path | None = None, platform: str = "desktop") -> Path:
     if not re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", name):
         raise ValueError("Name must be lowercase kebab-case, for example my-app")
     if mode not in {"jsonc", "native"}:
         raise ValueError("Mode must be jsonc or native")
+    if platform not in {"desktop", "android"}:
+        raise ValueError("Platform must be desktop or android")
     if not display_name.strip() or any(char in display_name for char in '\n\r"'):
         raise ValueError("Display name must be nonempty and contain no quotes or newlines")
     output_root = output_root.resolve()
     workspace = workspace.resolve() if workspace else find_workspace(output_root)
+    if platform == "android":
+        return create_android(name, mode, display_name, output_root, workspace)
     destination = output_root / name
     if destination.exists():
         raise FileExistsError(f"Project already exists: {destination}")
@@ -209,16 +215,225 @@ Replace the starter icon before publishing a release.''')
     return destination
 
 
+def create_android(name: str, mode: str, display_name: str, output_root: Path,
+                   workspace: Path | None) -> Path:
+    """Generate an Android client against the framework's Android bridge sources."""
+    destination = output_root / name
+    if destination.exists():
+        raise FileExistsError(f"Project already exists: {destination}")
+    output_root.mkdir(parents=True, exist_ok=True)
+    package = "megalodonte.app." + name.replace("-", "_")
+    package_path = package.replace(".", "/")
+    java_title = json.dumps(display_name, ensure_ascii=False)
+    xml_title = escape(display_name, {'"': '&quot;'})
+    framework = workspace / "framework/megalodonte-android" if workspace else None
+    relative_framework = (Path(os.path.relpath(framework, destination)).as_posix()
+                          if framework and framework.is_dir() else "framework/megalodonte-android")
+    with tempfile.TemporaryDirectory(prefix="megalodonte-new-", dir=output_root) as temporary:
+        root = Path(temporary)
+        write(root / "settings.gradle.kts", f'''pluginManagement {{ repositories {{ google(); mavenCentral(); gradlePluginPortal() }} }}
+dependencyResolutionManagement {{ repositories {{ google(); mavenCentral() }} }}
+rootProject.name = "{name}"
+include(":app", ":framework-core", ":android-bridge")
+val framework = file(System.getenv("MEGALODONTE_ANDROID_HOME") ?: "{relative_framework}")
+require(framework.resolve("android-bridge/build.gradle.kts").isFile) {{
+    "Set MEGALODONTE_ANDROID_HOME to a checkout of megalodonte-android"
+}}
+project(":framework-core").projectDir = framework.resolve("framework-core")
+project(":android-bridge").projectDir = framework.resolve("android-bridge")
+includeBuild(framework.resolve("../libraries/megalodonte-core"))
+includeBuild(framework.resolve("../libraries/megalodonte-theme"))
+includeBuild(framework.resolve("../libraries/megalodonte-reactivity-portable"))''')
+        write(root / "build.gradle.kts", '''plugins {
+    id("com.android.application") version "9.0.1" apply false
+    id("com.android.library") version "9.0.1" apply false
+}''')
+        write(root / "app/build.gradle.kts", f'''plugins {{ id("com.android.application") }}
+android {{
+    namespace = "{package}"
+    compileSdk = 35
+    defaultConfig {{
+        applicationId = "{package}"
+        minSdk = 35
+        targetSdk = 35
+        versionCode = 1
+        versionName = "0.1.0"
+    }}
+    compileOptions {{
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }}
+}}
+dependencies {{
+    implementation(project(":android-bridge"))
+    implementation("megalodonte:megalodonte-theme:1.0.0-beta")
+}}
+val verifyAndroidDependencies = tasks.register("verifyAndroidDependencies") {{
+    doLast {{
+        configurations.getByName("debugRuntimeClasspath").incoming.resolutionResult.allComponents.forEach {{ component ->
+            val module = component.moduleVersion ?: return@forEach
+            check(module.group != "org.openjfx") {{ "JavaFX must not be packaged in Android: $module" }}
+        }}
+    }}
+}}
+tasks.named("check") {{ dependsOn(verifyAndroidDependencies) }}''')
+        write(root / "gradle.properties", "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8")
+        write(root / ".gitignore", ".gradle/\nbuild/\napp/build/\nlocal.properties\n.idea/\n*.iml")
+        write(root / "app/src/main/AndroidManifest.xml", f'''<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="{xml_title}" android:icon="@drawable/ic_megalodonte"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar" android:supportsRtl="true">
+        <activity android:name="{package}.MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>''')
+        write(root / "app/src/main/res/drawable/ic_megalodonte.xml", '''<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="12dp"/><solid android:color="#17384a"/>
+</shape>''')
+        java = root / "app/src/main/java" / package_path
+        if mode == "native":
+            write(java / "MainActivity.java", f'''package {package};
+
+import megalodonte.android.bridge.MegalodonteActivity;
+import megalodonte.application.MegalodonteApp;
+import megalodonte.base.theme.ThemeManager;
+import megalodonte.theme.DefaultTheme;
+
+public final class MainActivity extends MegalodonteActivity {{
+    @Override protected void main() {{
+        ThemeManager.setTheme(new DefaultTheme());
+        MegalodonteApp.run(context -> context.useView(new HomeScreen()));
+    }}
+}}''')
+            write(java / "HomeScreen.java", f'''package {package};
+
+import megalodonte.base.components.Component;
+import megalodonte.base.components.ScreenComponent;
+import megalodonte.components.Text;
+import megalodonte.components.layout_components.Container;
+import megalodonte.props.ContainerProps;
+import megalodonte.props.TextProps;
+
+public final class HomeScreen implements ScreenComponent {{
+    @Override public Component render() {{
+        return new Container(new ContainerProps().paddingAll(24)).children(
+                new Text({java_title}, new TextProps().fontSize(28)));
+    }}
+}}''')
+        else:
+            write(root / "app/src/main/assets/views/home.view.jsonc", json.dumps({
+                "version": 1, "id": "home", "states": {"message": {"type": "string", "initial": ""}},
+                "view": {"type": "Column",
+                "props": {"padding": 24, "spacing": 12, "fillWidth": True},
+                "children": [{"type": "Text", "props": {"text": display_name}, "style": {"fontSize": 28}},
+                             {"type": "Text", "props": {"text": "Seu aplicativo Megalodonte está pronto."}},
+                             {"type": "Button", "props": {"text": "Começar", "action": "start"}},
+                             {"type": "Text", "props": {"bind": "message"}}]}
+            }, ensure_ascii=False, indent=2))
+            write(java / "MainActivity.java", f'''package {package};
+
+import java.nio.charset.StandardCharsets;
+import megalodonte.android.bridge.AndroidJsoncScreen;
+import megalodonte.android.bridge.MegalodonteActivity;
+import megalodonte.application.MegalodonteApp;
+import megalodonte.base.theme.ThemeManager;
+import megalodonte.theme.DefaultTheme;
+
+public final class MainActivity extends MegalodonteActivity {{
+    @Override protected void main() {{
+        try (var stream = getAssets().open("views/home.view.jsonc")) {{
+            String jsonc = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            ThemeManager.setTheme(new DefaultTheme());
+            AndroidJsoncScreen screen = new AndroidJsoncScreen(jsonc);
+            screen.onAction(action -> {{
+                if ("start".equals(action)) screen.setState("message", "Tudo pronto!");
+                else throw new IllegalArgumentException("Unknown action: " + action);
+            }});
+            MegalodonteApp.run(context -> context.useView(screen));
+        }} catch (java.io.IOException error) {{
+            throw new IllegalStateException("Cannot load home.view.jsonc", error);
+        }}
+    }}
+}}''')
+        for item in ("gradlew", "gradlew.bat"):
+            shutil.copy2(ASSETS / item, root / item)
+        shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
+        write(root / "README.md", f'''# {display_name}
+
+Megalodonte Android application using **{mode}** UI. The app targets Android 15 (API 35).
+Its screen uses only Megalodonte components; JSONC is rendered by the Android bridge.
+
+Install JDK 25 and Android SDK Platform 35. Clone `megalodonte-android`,
+`megalodonte-core`, `megalodonte-theme`, and `megalodonte-reactivity-portable`
+under this project's `framework/` directory, or set
+`MEGALODONTE_ANDROID_HOME` to the Android framework checkout. Then run:
+
+```sh
+./gradlew :app:assembleDebug :app:lintDebug
+```
+
+The APK is `app/build/outputs/apk/debug/app-debug.apk`. Open this directory in
+Android Studio to run on an Android 15 device or emulator.''')
+        write(root / ".github/workflows/android.yml", '''name: Build Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: eliezer-dev-software-enginner/megalodonte-android
+          path: framework/megalodonte-android
+      - uses: actions/checkout@v4
+        with:
+          repository: eliezer-dev-software-enginner/megalodonte-core
+          path: framework/libraries/megalodonte-core
+      - uses: actions/checkout@v4
+        with:
+          repository: eliezer-dev-software-enginner/megalodonte-theme
+          path: framework/libraries/megalodonte-theme
+      - uses: actions/checkout@v4
+        with:
+          repository: eliezer-dev-software-enginner/megalodonte-reactivity-portable
+          path: framework/libraries/megalodonte-reactivity-portable
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platforms;android-35" "build-tools;36.0.0"
+      - run: ./gradlew :app:assembleDebug :app:lintDebug :app:check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: app/build/outputs/apk/debug/*.apk''')
+        root.rename(destination)
+    subprocess.run(["git", "init", "-q", "-b", "main", str(destination)], check=True)
+    if workspace and output_root == (workspace / "applications").resolve():
+        with (workspace / "workspace.toml").open("a", encoding="utf-8") as stream:
+            stream.write(f'\n[[repositories]]\npath = "applications/{name}"\nlocal_only = true\n')
+    return destination
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("name", help="Lowercase project name, for example my-app")
     parser.add_argument("--mode", choices=("jsonc", "native"), required=True)
+    parser.add_argument("--platform", choices=("desktop", "android"), default="desktop")
     parser.add_argument("--display-name", help="Window and installer name (default: project name)")
     parser.add_argument("--output-root", type=Path, default=Path.cwd())
     parser.add_argument("--workspace", type=Path, help="Megalodonte workspace root for local source builds")
     args = parser.parse_args()
     try:
-        print(create(args.name, args.mode, args.display_name or args.name, args.output_root, args.workspace))
+        print(create(args.name, args.mode, args.display_name or args.name,
+                     args.output_root, args.workspace, args.platform))
     except (ValueError, FileExistsError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Project creation failed: {error}\n")
 
