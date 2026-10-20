@@ -39,7 +39,25 @@ Inside `megalodonte-world`, pass `--output-root applications --workspace .` to r
 
 ## Android projects
 
-Android projects target API 35 and compile Java 17 source. Install JDK 25 and Android SDK Platform 35, then run `./gradlew :app:assembleDebug :app:lintDebug`; the APK is under `app/build/outputs/apk/debug/`. The project uses the source modules in `megalodonte-android` and shared core, theme and portable reactivity libraries. When it is outside `megalodonte-world`, put these checkouts under the project's `framework/` directory or set `MEGALODONTE_ANDROID_HOME` to the Android backend checkout (with the shared libraries in its sibling `libraries/` directory). The generated workflow checks out these sources and uploads a debug APK. Android projects do not use JavaFX or desktop packaging.
+Android projects target API 35 and compile Java 17 source. Install JDK 25 and Android SDK Platform 35. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
+
+```text
+my-app/
+  framework/
+    megalodonte-android/
+    libraries/
+      megalodonte-core/
+      megalodonte-theme/
+      megalodonte-reactivity-portable/
+```
+
+Alternatively, set `MEGALODONTE_ANDROID_HOME` to the `megalodonte-android` checkout; its sibling `libraries/` directory must still contain the three shared library checkouts. From the generated project, run:
+
+```sh
+./gradlew :app:assembleDebug :app:lintDebug
+```
+
+The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. The generated workflow checks out these sources and uploads a debug APK. Android projects do not use JavaFX or desktop packaging.
 
 ## Development
 
