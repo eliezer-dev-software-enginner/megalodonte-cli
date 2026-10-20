@@ -387,6 +387,8 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      MEGALODONTE_ANDROID_HOME: framework/megalodonte-android
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4

@@ -34,7 +34,9 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn('id("com.android.application")', build)
                 self.assertNotIn('implementation("org.openjfx', build)
                 self.assertFalse((app / "packaging.toml").exists())
-                self.assertTrue((app / ".github/workflows/android.yml").is_file())
+                workflow = (app / ".github/workflows/android.yml").read_text()
+                self.assertIn("MEGALODONTE_ANDROID_HOME: framework/megalodonte-android", workflow)
+                self.assertTrue((app / ".git").is_dir())
                 self.assertEqual((app / "app/src/main/assets/views/home.view.jsonc").exists(), mode == "jsonc")
                 if mode == "jsonc":
                     view = (app / "app/src/main/assets/views/home.view.jsonc").read_text()
