@@ -265,6 +265,7 @@ android {{
     }}
 }}
 dependencies {{
+    implementation(project(":framework-core"))
     implementation(project(":android-bridge"))
     implementation("megalodonte:megalodonte-theme:1.0.0-beta")
 }}
@@ -378,7 +379,9 @@ under this project's `framework/` directory, or set
 ```
 
 The APK is `app/build/outputs/apk/debug/app-debug.apk`. Open this directory in
-Android Studio to run on an Android 15 device or emulator.''')
+Android Studio to run on an Android 15 device or emulator. If its editor shows
+an import or constructor error while Gradle builds successfully, use **Sync
+Project with Gradle Files** to refresh the local framework modules.''')
         write(root / ".github/workflows/android.yml", '''name: Build Android APK
 on:
   workflow_dispatch:

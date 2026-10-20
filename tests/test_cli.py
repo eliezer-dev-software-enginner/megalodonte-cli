@@ -32,6 +32,7 @@ class NewApplicationTests(unittest.TestCase):
                 build = (app / "app/build.gradle.kts").read_text()
                 self.assertIn('include(":app", ":framework-core", ":android-bridge")', settings)
                 self.assertIn('id("com.android.application")', build)
+                self.assertIn('implementation(project(":framework-core"))', build)
                 self.assertNotIn('implementation("org.openjfx', build)
                 self.assertFalse((app / "packaging.toml").exists())
                 workflow = (app / ".github/workflows/android.yml").read_text()
