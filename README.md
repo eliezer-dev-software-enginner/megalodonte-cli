@@ -1,6 +1,6 @@
 # Megalodonte CLI
 
-Create desktop and Android applications with Megalodonte. The CLI supports declarative JSONC views (`jsonc`) and Java screens composed from Megalodonte components (`native`) on both platforms. It generates a Gradle build, wrapper, starter screen, GitHub Actions workflow, icon, and local Git repository. Desktop projects also receive AppImage, DEB and MSI packaging.
+Create desktop, Android, and Roku applications with Megalodonte. Desktop and Android support declarative JSONC views (`jsonc`) and Java screens (`native`). Roku initially supports Java-authored native screens: Java runs at build time and produces SceneGraph XML and BrightScript for the TV. The CLI generates a Gradle build, wrapper, starter screen, GitHub Actions workflow, icon, and local Git repository. Desktop projects also receive AppImage, DEB and MSI packaging.
 
 ## Install
 
@@ -21,9 +21,10 @@ megalodonte my-app --mode jsonc --display-name "My App"
 megalodonte another-app --mode native
 megalodonte phone-app --platform android --mode native
 megalodonte phone-jsonc --platform android --mode jsonc
+megalodonte roku-hello-world --platform roku --mode native --display-name "Megalodonte Roku Hello"
 ```
 
-On desktop, `jsonc` creates a declarative starter view and a Java `ViewScript`; `native` creates a Java screen composed from Megalodonte components. On Android, `native` creates a `ScreenComponent`; `jsonc` stores the view under `app/src/main/assets/views/` and renders it through the Android bridge. All 21 JSONC component types have an Android renderer. See the [Android component guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md) for behavior and property differences from desktop. The project is created in `./my-app` (or the chosen `--output-root`). The CLI also runs `git init`, so Git must be available. Names must start with a lowercase letter and may contain lowercase letters, digits, and single hyphens between groups; `--mode` is required. Desktop builds target Java 25 and JavaFX 25.0.1. To test and launch a desktop project:
+On desktop, `jsonc` creates a declarative starter view and a Java `ViewScript`; `native` creates a Java screen composed from Megalodonte components. On Android, `native` creates a `ScreenComponent`; `jsonc` stores the view under `app/src/main/assets/views/` and renders it through the Android bridge. See the [Android component guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md) for supported components, behavior, and property differences from desktop. The project is created in `./my-app` (or the chosen `--output-root`). The CLI also runs `git init`, so Git must be available. Names must start with a lowercase letter and may contain lowercase letters, digits, and single hyphens between groups; `--mode` is required. Desktop builds target Java 25 and JavaFX 25.0.1. To test and launch a desktop project:
 
 ```sh
 cd my-app
@@ -39,7 +40,7 @@ Inside `megalodonte-world`, pass `--output-root applications --workspace .` to r
 
 ## Android projects
 
-Android projects target API 35 and compile Java 17 source. Install JDK 25 and Android SDK Platform 35. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
+Android projects require Android 15 (API 35) or later: their minimum and target SDK are both 35. They compile Java 17 source. Install JDK 25 and Android SDK Platform 35. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
 
 ```text
 my-app/
@@ -58,6 +59,16 @@ Alternatively, set `MEGALODONTE_ANDROID_HOME` to the `megalodonte-android` check
 ```
 
 The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. The generated workflow checks out these sources and uploads a debug APK. Android projects do not use JavaFX or desktop packaging.
+
+## Roku
+
+`--platform roku --mode native` generates a Java `HomeScreen` using
+`megalodonte-roku`. Run `./gradlew packageRoku`; the result is
+`build/roku/<project>.zip`, ready for Roku Developer Mode sideloading. Set
+`MEGALODONTE_ROKU_HOME` to a checkout of `megalodonte-roku` when the project is
+outside this workspace. The first Roku component set is a heading and message;
+arbitrary Java code and desktop/Android components cannot run on Roku. The
+generated BrightScript can be checked with the BrighterScript CLI (`bsc`).
 
 ## Development
 

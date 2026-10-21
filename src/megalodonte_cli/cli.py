@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a Megalodonte desktop app with build, packaging and Actions wired together."""
+"""Create Megalodonte desktop, Android, and Roku projects."""
 from __future__ import annotations
 
 import argparse
@@ -58,14 +58,22 @@ def create(name: str, mode: str, display_name: str, output_root: Path,
         raise ValueError("Name must be lowercase kebab-case, for example my-app")
     if mode not in {"jsonc", "native"}:
         raise ValueError("Mode must be jsonc or native")
-    if platform not in {"desktop", "android"}:
-        raise ValueError("Platform must be desktop or android")
+    if platform not in {"desktop", "android", "roku"}:
+        raise ValueError("Platform must be desktop, android or roku")
     if not display_name.strip() or any(char in display_name for char in '\n\r"'):
         raise ValueError("Display name must be nonempty and contain no quotes or newlines")
+    quoted_title = json.dumps(display_name, ensure_ascii=False)
+    properties_title = display_name.replace("\\", "\\\\")
+    properties_title = re.sub(r"^[ \t\f]+", lambda match: "".join(
+        {" ": r"\ ", "\t": r"\t", "\f": r"\f"}[char] for char in match.group()), properties_title)
     output_root = output_root.resolve()
     workspace = workspace.resolve() if workspace else find_workspace(output_root)
     if platform == "android":
         return create_android(name, mode, display_name, output_root, workspace)
+    if platform == "roku":
+        if mode != "native":
+            raise ValueError("Roku currently supports --mode native only")
+        return create_roku(name, display_name, output_root, workspace)
     destination = output_root / name
     if destination.exists():
         raise FileExistsError(f"Project already exists: {destination}")
@@ -115,7 +123,7 @@ tasks.withType<JavaCompile>().configureEach {{ options.encoding = "UTF-8" }}''')
         write(root / "packaging.toml", f'''schema_version = 1
 
 [app]
-name = "{display_name}"
+name = {quoted_title}
 version = "0.1.0"
 main_class = "{main_class}"
 icon_linux = "src/main/resources/icon.png"
@@ -142,7 +150,7 @@ menu_group = "Office"''')
 </svg>''')
         shutil.copy2(ASSETS / "starter-icon.png", root / "src/main/resources/icon.png")
         if mode == "jsonc":
-            write(root / "src/main/resources/application.properties", f'''app.name={display_name}
+            write(root / "src/main/resources/application.properties", f'''app.name={properties_title}
 app.initialView=home
 app.scriptsPackage={package}
 app.views=/views
@@ -173,7 +181,7 @@ import megalodonte.theme.DefaultTheme;
 public final class Main {{
     public static void main(String[] args) {{
         ThemeManager.setTheme(new DefaultTheme());
-        MegalodonteApp.appName("{display_name}");
+        MegalodonteApp.appName({quoted_title});
         MegalodonteApp.run(context -> context.useView(new HomeScreen()));
     }}
 }}''')
@@ -189,7 +197,7 @@ import megalodonte.props.TextProps;
 public final class HomeScreen implements ScreenComponent {{
     @Override public Component render() {{
         return new Container(new ContainerProps().paddingAll(28)).children(
-                new Text("{display_name}", new TextProps().fontSize(28)));
+                new Text({quoted_title}, new TextProps().fontSize(28)));
     }}
 }}''')
         write(root / "README.md", f'''# {display_name}
@@ -429,11 +437,107 @@ jobs:
     return destination
 
 
+def create_roku(name: str, display_name: str, output_root: Path,
+                workspace: Path | None) -> Path:
+    """Generate a Java-authored SceneGraph app and a sideloadable ZIP build."""
+    destination = output_root / name
+    if destination.exists():
+        raise FileExistsError(f"Project already exists: {destination}")
+    output_root.mkdir(parents=True, exist_ok=True)
+    package = "megalodonte.app." + name.replace("-", "_")
+    package_path = package.replace(".", "/")
+    java_title = json.dumps(display_name, ensure_ascii=False)
+    framework = workspace / "framework/megalodonte-roku" if workspace else None
+    relative_framework = (Path(os.path.relpath(framework, destination)).as_posix()
+                          if framework and framework.is_dir() else "framework/megalodonte-roku")
+    with tempfile.TemporaryDirectory(prefix="megalodonte-new-", dir=output_root) as temporary:
+        root = Path(temporary)
+        write(root / "settings.gradle.kts", f'''rootProject.name = "{name}"
+val roku = file(System.getenv("MEGALODONTE_ROKU_HOME") ?: "{relative_framework}")
+require(roku.resolve("build.gradle.kts").isFile) {{
+    "Set MEGALODONTE_ROKU_HOME to a checkout of megalodonte-roku"
+}}
+includeBuild(roku)''')
+        write(root / "build.gradle.kts", f'''plugins {{ java }}
+group = "megalodonte.app"
+version = "0.1.0"
+repositories {{ mavenCentral() }}
+java {{ toolchain {{ languageVersion.set(JavaLanguageVersion.of(25)) }} }}
+dependencies {{ implementation("megalodonte:megalodonte-roku:0.1.0") }}
+tasks.register<JavaExec>("packageRoku") {{
+    group = "distribution"
+    description = "Generate a Roku sideload ZIP from the Java screen"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("megalodonte.roku.RokuExporter")
+    args("{package}.HomeScreen", {java_title}, "build/roku/{name}.zip")
+}}''')
+        write(root / f"src/main/java/{package_path}/HomeScreen.java", f'''package {package};
+
+import megalodonte.roku.RokuScene;
+import megalodonte.roku.RokuScreen;
+
+public final class HomeScreen implements RokuScreen {{
+    @Override public RokuScene render() {{
+        return new RokuScene({java_title}, "Hello World! Esta tela foi criada em Java com Megalodonte.");
+    }}
+}}''')
+        write(root / "README.md", f'''# {display_name}
+
+A Megalodonte Roku example authored in Java. The Java screen runs **at build time**;
+the output is native Roku SceneGraph XML and BrightScript, not a JVM on the TV.
+
+Requires JDK 25 and a checkout of `megalodonte-roku`. In the Megalodonte workspace,
+the CLI wires its path automatically. Else set `MEGALODONTE_ROKU_HOME` to that checkout.
+
+```sh
+./gradlew packageRoku
+```
+
+Upload `build/roku/{name}.zip` in your Roku's Development Application Installer.
+Enable developer mode first, open the device URL in a browser, and sign in as
+`rokudev` with your developer password. The ZIP contains `manifest`, `source/`,
+`components/`, and `images/` at its root. Only one sideloaded app can be installed
+at a time. Edit `src/main/java/{package_path}/HomeScreen.java`, rebuild, and
+upload the new ZIP to see changes.''')
+        write(root / ".gitignore", ".gradle/\nbuild/\n.idea/\n*.iml")
+        for item in ("gradlew", "gradlew.bat"):
+            shutil.copy2(ASSETS / item, root / item)
+        shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
+        write(root / ".github/workflows/roku.yml", '''name: Build Roku ZIP
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: eliezer-dev-software-enginner/megalodonte-roku
+          path: framework/megalodonte-roku
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - run: ./gradlew packageRoku
+        env:
+          MEGALODONTE_ROKU_HOME: framework/megalodonte-roku
+      - uses: actions/upload-artifact@v4
+        with:
+          name: roku-sideload-zip
+          path: build/roku/*.zip''')
+        root.rename(destination)
+    subprocess.run(["git", "init", "-q", "-b", "main", str(destination)], check=True)
+    if workspace and output_root == (workspace / "applications").resolve():
+        with (workspace / "workspace.toml").open("a", encoding="utf-8") as stream:
+            stream.write(f'\n[[repositories]]\npath = "applications/{name}"\nlocal_only = true\n')
+    return destination
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("name", help="Lowercase project name, for example my-app")
     parser.add_argument("--mode", choices=("jsonc", "native"), required=True)
-    parser.add_argument("--platform", choices=("desktop", "android"), default="desktop")
+    parser.add_argument("--platform", choices=("desktop", "android", "roku"), default="desktop")
     parser.add_argument("--display-name", help="Window and installer name (default: project name)")
     parser.add_argument("--output-root", type=Path, default=Path.cwd())
     parser.add_argument("--workspace", type=Path, help="Megalodonte workspace root for local source builds")
