@@ -475,28 +475,35 @@ tasks.register<JavaExec>("packageRoku") {{
 
 import megalodonte.roku.RokuScene;
 import megalodonte.roku.RokuScreen;
-import megalodonte.roku.RokuButton;
-import megalodonte.roku.RokuCounter;
+import megalodonte.components.Button;
+import megalodonte.components.Counter;
+import megalodonte.components.Text;
+import megalodonte.theme.Theme;
+import megalodonte.application.Router;
 import java.util.List;
 
 public final class HomeScreen implements RokuScreen {{
+    @Override public Theme theme() {{
+        return new Theme("0x142536FF", "0x7CE0D6FF", "0xFFFFFFFF", "0x31566EFF", "0x237E9DFF");
+    }}
+
     @Override public RokuScene render() {{
         return new RokuScene("home", {java_title},
                 "Use as setas e OK do controle remoto para navegar.",
-                List.of(new RokuButton("Sobre o projeto", "about"),
-                        new RokuButton("Contador reativo", "counter")));
+                new Text("Feito com Megalodonte", 100, 100, 800, 70),
+                new Button("Sobre o projeto", "about"),
+                new Button("Contador reativo", "counter"));
     }}
 
     @Override public List<RokuScene> pages() {{
-        return List.of(render(),
-                new RokuScene("about", "Criado em Java",
+        return new Router().route(render())
+                .route(new RokuScene("about", "Criado em Java",
                         "O build Megalodonte gerou esta tela nativa SceneGraph.",
-                        List.of(new RokuButton("Voltar ao início", "home"))),
-                new RokuScene("counter", "Estado na Roku",
+                        new Button("Voltar ao início", "home")))
+                .route(new RokuScene("counter", "Estado na Roku",
                         "Pressione OK para mudar o valor sem reiniciar o aplicativo.",
-                        List.of(RokuButton.increment("Incrementar"),
-                                new RokuButton("Voltar ao início", "home")),
-                        new RokuCounter("Cliques", 0)));
+                        new Counter("Cliques", 0), Button.increment("Incrementar"),
+                        new Button("Voltar ao início", "home"))).pages();
     }}
 }}''')
         write(root / "README.md", f'''# {display_name}

@@ -66,9 +66,10 @@ The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. The generated work
 `megalodonte-roku`. Run `./gradlew packageRoku`; the result is
 `build/roku/<project>.zip`, ready for Roku Developer Mode sideloading. Set
 `MEGALODONTE_ROKU_HOME` to a checkout of `megalodonte-roku` when the project is
-outside this workspace. The starter demonstrates three routes, remote-control
-buttons, and a runtime counter. Arbitrary Java code and desktop/Android
-components cannot run on Roku. The
+outside this workspace. The starter demonstrates three routes, unprefixed
+`Button`, `Text`, and `Counter` components, a build-time `Theme` palette, and a
+runtime counter. `Image` is available for local PNG/JPEG assets. Arbitrary Java
+code and desktop/Android component implementations cannot run on Roku. The
 generated BrightScript can be checked with the BrighterScript CLI (`bsc`).
 
 ## Development

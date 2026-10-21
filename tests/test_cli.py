@@ -73,9 +73,9 @@ class NewApplicationTests(unittest.TestCase):
             self.assertTrue((app / ".git").is_dir())
             screen = (app / "src/main/java/megalodonte/app/roku_hello/HomeScreen.java").read_text()
             self.assertIn("RokuScene", screen)
-            self.assertIn('new RokuButton("Contador reativo", "counter")', screen)
-            self.assertIn('RokuButton.increment("Incrementar")', screen)
-            self.assertIn('new RokuCounter("Cliques", 0)', screen)
+            self.assertIn('new Button("Contador reativo", "counter")', screen)
+            self.assertIn('Button.increment("Incrementar")', screen)
+            self.assertIn('new Counter("Cliques", 0)', screen)
             self.assertIn("packageRoku", (app / "build.gradle.kts").read_text())
             self.assertIn("megalodonte-roku", (app / ".github/workflows/roku.yml").read_text())
             with self.assertRaises(ValueError):
