@@ -475,16 +475,36 @@ tasks.register<JavaExec>("packageRoku") {{
 
 import megalodonte.roku.RokuScene;
 import megalodonte.roku.RokuScreen;
+import megalodonte.roku.RokuButton;
+import megalodonte.roku.RokuCounter;
+import java.util.List;
 
 public final class HomeScreen implements RokuScreen {{
     @Override public RokuScene render() {{
-        return new RokuScene({java_title}, "Hello World! Esta tela foi criada em Java com Megalodonte.");
+        return new RokuScene("home", {java_title},
+                "Use as setas e OK do controle remoto para navegar.",
+                List.of(new RokuButton("Sobre o projeto", "about"),
+                        new RokuButton("Contador reativo", "counter")));
+    }}
+
+    @Override public List<RokuScene> pages() {{
+        return List.of(render(),
+                new RokuScene("about", "Criado em Java",
+                        "O build Megalodonte gerou esta tela nativa SceneGraph.",
+                        List.of(new RokuButton("Voltar ao início", "home"))),
+                new RokuScene("counter", "Estado na Roku",
+                        "Pressione OK para mudar o valor sem reiniciar o aplicativo.",
+                        List.of(RokuButton.increment("Incrementar"),
+                                new RokuButton("Voltar ao início", "home")),
+                        new RokuCounter("Cliques", 0)));
     }}
 }}''')
         write(root / "README.md", f'''# {display_name}
 
 A Megalodonte Roku example authored in Java. The Java screen runs **at build time**;
 the output is native Roku SceneGraph XML and BrightScript, not a JVM on the TV.
+It has Home, About, and Counter routes. Up/Down selects a button, OK activates
+it, and Back returns to the previous page. The counter label updates at runtime.
 
 Requires JDK 25 and a checkout of `megalodonte-roku`. In the Megalodonte workspace,
 the CLI wires its path automatically. Else set `MEGALODONTE_ROKU_HOME` to that checkout.

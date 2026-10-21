@@ -71,7 +71,11 @@ class NewApplicationTests(unittest.TestCase):
             root = Path(directory)
             app = MODULE.create("roku-hello", "native", "Roku Hello", root, platform="roku")
             self.assertTrue((app / ".git").is_dir())
-            self.assertIn("RokuScene", (app / "src/main/java/megalodonte/app/roku_hello/HomeScreen.java").read_text())
+            screen = (app / "src/main/java/megalodonte/app/roku_hello/HomeScreen.java").read_text()
+            self.assertIn("RokuScene", screen)
+            self.assertIn('new RokuButton("Contador reativo", "counter")', screen)
+            self.assertIn('RokuButton.increment("Incrementar")', screen)
+            self.assertIn('new RokuCounter("Cliques", 0)', screen)
             self.assertIn("packageRoku", (app / "build.gradle.kts").read_text())
             self.assertIn("megalodonte-roku", (app / ".github/workflows/roku.yml").read_text())
             with self.assertRaises(ValueError):
