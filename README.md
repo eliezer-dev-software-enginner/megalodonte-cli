@@ -63,10 +63,12 @@ The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. The generated work
 ## Roku
 
 `--platform roku --mode native` generates a Java `HomeScreen` using
-`megalodonte-roku`. Run `./gradlew packageRoku`; the result is
-`build/roku/<project>.zip`, ready for Roku Developer Mode sideloading. Set
-`MEGALODONTE_ROKU_HOME` to a checkout of `megalodonte-roku` when the project is
-outside this workspace. The starter demonstrates three routes, unprefixed
+`megalodonte-roku`. The generated build requires a Java 25 toolchain and a
+checkout of `megalodonte-roku`. Outside this workspace, place the checkout at
+`framework/megalodonte-roku` relative to the generated project, or set
+`MEGALODONTE_ROKU_HOME` to its path. From the generated project directory, run
+`./gradlew packageRoku`; the result is `build/roku/<project>.zip`, ready for Roku
+Developer Mode sideloading. The starter demonstrates three routes, unprefixed
 `Button`, `Text`, and `Counter` components, a build-time `Theme` palette, and a
 runtime counter. `Image` is available for local PNG/JPEG assets. Arbitrary Java
 code and desktop/Android component implementations cannot run on Roku. The
