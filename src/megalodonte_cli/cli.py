@@ -53,7 +53,7 @@ def write(path: Path, content: str) -> None:
 
 
 def create(name: str, mode: str, display_name: str, output_root: Path,
-           workspace: Path | None = None, platform: str = "desktop") -> Path:
+           workspace: Path | None = None, platform: str = "desktop", min_sdk: int = 35) -> Path:
     if not re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", name):
         raise ValueError("Name must be lowercase kebab-case, for example my-app")
     if mode not in {"jsonc", "native"}:
@@ -69,7 +69,11 @@ def create(name: str, mode: str, display_name: str, output_root: Path,
     output_root = output_root.resolve()
     workspace = workspace.resolve() if workspace else find_workspace(output_root)
     if platform == "android":
-        return create_android(name, mode, display_name, output_root, workspace)
+        if not 25 <= min_sdk <= 35:
+            raise ValueError("Android min SDK must be between 25 and 35")
+        return create_android(name, mode, display_name, output_root, workspace, min_sdk)
+    if min_sdk != 35:
+        raise ValueError("--min-sdk applies only to Android projects")
     if platform == "roku":
         if mode != "native":
             raise ValueError("Roku currently supports --mode native only")
@@ -224,7 +228,7 @@ Replace the starter icon before publishing a release.''')
 
 
 def create_android(name: str, mode: str, display_name: str, output_root: Path,
-                   workspace: Path | None) -> Path:
+                   workspace: Path | None, min_sdk: int) -> Path:
     """Generate an Android client against the framework's Android bridge sources."""
     destination = output_root / name
     if destination.exists():
@@ -262,7 +266,7 @@ android {{
     compileSdk = 35
     defaultConfig {{
         applicationId = "{package}"
-        minSdk = 35
+        minSdk = {min_sdk}
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
@@ -270,12 +274,14 @@ android {{
     compileOptions {{
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }}
 }}
 dependencies {{
     implementation(project(":framework-core"))
     implementation(project(":android-bridge"))
     implementation("megalodonte:megalodonte-theme:1.0.0-beta")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }}
 val verifyAndroidDependencies = tasks.register("verifyAndroidDependencies") {{
     doLast {{
@@ -372,7 +378,7 @@ public final class MainActivity extends MegalodonteActivity {{
         shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
         write(root / "README.md", f'''# {display_name}
 
-Megalodonte Android application using **{mode}** UI. The app targets Android 15 (API 35).
+Megalodonte Android application using **{mode}** UI. It supports Android API {min_sdk} and later, and targets API 35.
 Its screen uses only Megalodonte components; JSONC is rendered by the Android bridge.
 The [Android JSONC guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md)
 lists the supported component types, bindings and platform-specific properties.
@@ -387,7 +393,7 @@ under this project's `framework/` directory, or set
 ```
 
 The APK is `app/build/outputs/apk/debug/app-debug.apk`. Open this directory in
-Android Studio to run on an Android 15 device or emulator. If its editor shows
+Android Studio to run on a compatible device or emulator. If its editor shows
 an import or constructor error while Gradle builds successfully, use **Sync
 Project with Gradle Files** to refresh the local framework modules.''')
         write(root / ".github/workflows/android.yml", '''name: Build Android APK
@@ -565,13 +571,14 @@ def main() -> None:
     parser.add_argument("name", help="Lowercase project name, for example my-app")
     parser.add_argument("--mode", choices=("jsonc", "native"), required=True)
     parser.add_argument("--platform", choices=("desktop", "android", "roku"), default="desktop")
+    parser.add_argument("--min-sdk", type=int, default=35, help="Minimum Android API level (25–35; default 35)")
     parser.add_argument("--display-name", help="Window and installer name (default: project name)")
     parser.add_argument("--output-root", type=Path, default=Path.cwd())
     parser.add_argument("--workspace", type=Path, help="Megalodonte workspace root for local source builds")
     args = parser.parse_args()
     try:
         print(create(args.name, args.mode, args.display_name or args.name,
-                     args.output_root, args.workspace, args.platform))
+                     args.output_root, args.workspace, args.platform, args.min_sdk))
     except (ValueError, FileExistsError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Project creation failed: {error}\n")
 

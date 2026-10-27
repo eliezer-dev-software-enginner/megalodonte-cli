@@ -66,6 +66,19 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertEqual((app / "app/src/main/java/megalodonte/app/android_native/HomeScreen.java").exists(),
                                  mode == "native")
 
+    def test_android_can_target_legacy_tv_box(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            app = MODULE.create("android-tv", "native", "Android TV", root,
+                                platform="android", min_sdk=25)
+            build = (app / "app/build.gradle.kts").read_text()
+            self.assertIn("minSdk = 25", build)
+            self.assertIn("isCoreLibraryDesugaringEnabled = true", build)
+            self.assertIn("coreLibraryDesugaring(", build)
+            with self.assertRaises(ValueError):
+                MODULE.create("too-old", "native", "Too Old", root,
+                              platform="android", min_sdk=24)
+
     def test_roku_native_generates_java_screen_and_sideload_build(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

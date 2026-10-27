@@ -40,7 +40,7 @@ Inside `megalodonte-world`, pass `--output-root applications --workspace .` to r
 
 ## Android projects
 
-Android projects require Android 15 (API 35) or later: their minimum and target SDK are both 35. They compile Java 17 source. Install JDK 25 and Android SDK Platform 35. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
+Android projects target API 35 and default to a minimum of API 35. For older TV boxes, pass `--min-sdk 25` (Android 7.1). The bridge handles legacy system insets and the generated app enables Java library desugaring. They compile Java 17 source. Install JDK 25 and Android SDK Platform 35. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
 
 ```text
 my-app/
