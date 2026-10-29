@@ -4,13 +4,13 @@ Create desktop, Android, and Roku applications with Megalodonte. Desktop and And
 
 ## Install
 
-Requires Python 3.11 or later. From this repository:
+Requires Python 3.11 or later. From this repository, install the CLI in an isolated environment:
 
 ```sh
-python3 -m pip install --user .
+pipx install --editable .
 ```
 
-For an editable development installation, use `python3 -m pip install -e .` in a virtual environment.
+For a non-editable install, use `pipx install .`. An editable install immediately exposes updates made in this checkout. A Python virtual environment with `pip install -e .` also works.
 
 ## Create an application
 
@@ -31,6 +31,18 @@ cd my-app
 ./gradlew test
 ./gradlew run
 ```
+
+## Skills para agentes
+
+Todo projeto gerado, seja desktop, Android ou Roku, contém `skills/megalodonte-native-ui/SKILL.md` e um `AGENTS.md` que manda sincronizar e ler a skill antes de alterar a interface. A cópia é versionada com o projeto; o CLI empacota a versão canônica, então projetos novos recebem a versão do CLI instalado.
+
+Para fazer a skill aparecer no menu `$` do Codex, na raiz do projeto execute:
+
+```sh
+megalodonte skills install --project .
+```
+
+O comando cria um vínculo em `~/.codex/skills` (ou `$CODEX_HOME/skills`) para a skill do projeto. Se já houver uma instalação com esse nome apontando a outro lugar, o CLI informa o conflito e não a substitui. Depois de atualizar o CLI, atualize um projeto existente com `megalodonte skills sync --project .`; o vínculo acompanha o arquivo atualizado. A sincronização substitui a cópia da skill no projeto, então mantenha personalizações específicas em outra skill. Reinicie a conversa se o menu `$` não atualizar imediatamente.
 
 Gradle needs a Java 25 toolchain. The wrapper may download Gradle, and the build needs its Megalodonte dependencies from Maven local, Maven Central, or the local workspace builds described below.
 

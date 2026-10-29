@@ -10,11 +10,80 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from xml.sax.saxutils import escape
 
 
 ASSETS = files("megalodonte_cli").joinpath("assets")
+SKILL_NAME = "megalodonte-native-ui"
+
+
+def sync_skills(project: Path) -> Path:
+    """Copy the skills bundled with this CLI into an existing project."""
+    project = project.resolve()
+    if not (project / "AGENTS.md").is_file():
+        raise ValueError(f"Not a Megalodonte project with AGENTS.md: {project}")
+    source = ASSETS / "skills" / SKILL_NAME / "SKILL.md"
+    destination = project / "skills" / SKILL_NAME / "SKILL.md"
+    write(destination, source.read_text(encoding="utf-8"))
+    return destination
+
+
+def install_skills(project: Path, codex_home: Path | None = None) -> Path:
+    """Register the project skill in Codex without duplicating its content."""
+    source = (project.resolve() / "skills" / SKILL_NAME)
+    if not (source / "SKILL.md").is_file():
+        raise ValueError(f"Skill missing; run 'megalodonte skills sync --project {project}' first")
+    home = codex_home or Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    destination = home.expanduser() / "skills" / SKILL_NAME
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    canonical = Path(str(ASSETS / "skills" / SKILL_NAME)).resolve()
+    if destination.is_symlink() and destination.resolve() in (source, canonical):
+        return destination
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(f"Skill already installed at {destination}; remove it explicitly before changing its source")
+    destination.symlink_to(source, target_is_directory=True)
+    return destination
+
+
+def write_skill_guidance(root: Path, platform: str) -> None:
+    source = ASSETS / "skills" / SKILL_NAME / "SKILL.md"
+    write(root / "skills" / SKILL_NAME / "SKILL.md", source.read_text(encoding="utf-8"))
+    write(root / "AGENTS.md", f'''# Megalodonte — {platform}
+
+Antes de criar ou alterar interfaces, execute `megalodonte skills sync --project .`
+quando o CLI estiver disponível e então leia `skills/{SKILL_NAME}/SKILL.md`.
+Siga as regras comuns de composição, estado e tema; aplique as regras específicas
+da plataforma indicada na skill. Se a skill ainda não estiver no catálogo do Codex,
+ela continua obrigatória por esta instrução. Se o CLI não estiver instalado,
+use a cópia versionada e informe que não foi possível sincronizar.''')
+
+
+SKILL_README = f'''
+
+## Skills para agentes
+
+Este projeto inclui [`skills/{SKILL_NAME}/SKILL.md`](skills/{SKILL_NAME}/SKILL.md).
+O `AGENTS.md` exige que agentes leiam a skill antes de alterar a interface; isso
+funciona mesmo sem instalá-la no catálogo. Para usar `$` no Codex, execute na
+raiz do projeto:
+
+```sh
+megalodonte skills install --project .
+```
+
+O comando cria um vínculo em `~/.codex/skills` (ou `$CODEX_HOME/skills`), sem
+duplicar o arquivo. Reinicie a conversa se o menu de `$` não atualizar. Após
+atualizar o Megalodonte CLI, sincronize a versão mais recente da skill com:
+
+```sh
+megalodonte skills sync --project .
+```
+
+O projeto mantém sua própria cópia versionada da skill; a instalação no Codex
+acompanha as alterações dessa cópia automaticamente.
+'''
 
 
 def find_workspace(start: Path) -> Path | None:
@@ -211,7 +280,8 @@ Megalodonte desktop application using the **{mode}** UI mode.
 Run `./gradlew test` to check the project and `./gradlew run` to launch it.
 Build an AppImage with `python3 scripts/package.py build appimage`.
 The standard GitHub Actions caller builds AppImage, DEB and MSI installers on a matching `v*` tag or manual dispatch.
-Replace the starter icon before publishing a release.''')
+Replace the starter icon before publishing a release.{SKILL_README}''')
+        write_skill_guidance(root, "desktop")
         for item in ("gradlew", "gradlew.bat"):
             shutil.copy2(ASSETS / item, root / item)
         shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
@@ -395,7 +465,8 @@ under this project's `framework/` directory, or set
 The APK is `app/build/outputs/apk/debug/app-debug.apk`. Open this directory in
 Android Studio to run on a compatible device or emulator. If its editor shows
 an import or constructor error while Gradle builds successfully, use **Sync
-Project with Gradle Files** to refresh the local framework modules.''')
+Project with Gradle Files** to refresh the local framework modules.{SKILL_README}''')
+        write_skill_guidance(root, "android")
         write(root / ".github/workflows/android.yml", '''name: Build Android APK
 on:
   workflow_dispatch:
@@ -531,7 +602,8 @@ Enable developer mode first, open the device URL in a browser, and sign in as
 `rokudev` with your developer password. The ZIP contains `manifest`, `source/`,
 `components/`, and `images/` at its root. Only one sideloaded app can be installed
 at a time. Edit `src/main/java/{package_path}/HomeScreen.java`, rebuild, and
-upload the new ZIP to see changes.''')
+upload the new ZIP to see changes.{SKILL_README}''')
+        write_skill_guidance(root, "roku")
         write(root / ".gitignore", ".gradle/\nbuild/\n.idea/\n*.iml")
         for item in ("gradlew", "gradlew.bat"):
             shutil.copy2(ASSETS / item, root / item)
@@ -567,6 +639,19 @@ jobs:
 
 
 def main() -> None:
+    if len(sys.argv) >= 2 and sys.argv[1] == "skills":
+        skills_parser = argparse.ArgumentParser(description="Manage bundled Megalodonte skills")
+        skills_parser.add_argument("skills", choices=("skills",))
+        skills_parser.add_argument("action", choices=("sync", "install"))
+        skills_parser.add_argument("--project", type=Path, default=Path.cwd())
+        skills_args = skills_parser.parse_args()
+        try:
+            result = (sync_skills(skills_args.project) if skills_args.action == "sync"
+                      else install_skills(skills_args.project))
+            print(result)
+        except (ValueError, FileExistsError, OSError) as error:
+            skills_parser.exit(1, f"Skill operation failed: {error}\n")
+        return
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("name", help="Lowercase project name, for example my-app")
     parser.add_argument("--mode", choices=("jsonc", "native"), required=True)

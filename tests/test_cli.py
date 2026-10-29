@@ -94,6 +94,24 @@ class NewApplicationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 MODULE.create("roku-jsonc", "jsonc", "Unsupported", root, platform="roku")
 
+    def test_projects_bundle_skill_and_support_sync_and_install(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for platform in ("desktop", "android", "roku"):
+                app = MODULE.create(f"skill-{platform}", "native", "Skill Demo", root, platform=platform)
+                skill = app / "skills/megalodonte-native-ui/SKILL.md"
+                self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
+                self.assertIn("megalodonte skills install --project .", (app / "README.md").read_text())
+                skill.write_text("stale")
+                self.assertEqual(MODULE.sync_skills(app), skill)
+                self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                codex_home = root / f"codex-{platform}"
+                link = MODULE.install_skills(app, codex_home)
+                self.assertTrue(link.is_symlink())
+                self.assertEqual(link.resolve(), skill.parent.resolve())
+                self.assertEqual(MODULE.install_skills(app, codex_home), link)
+
 
 if __name__ == "__main__":
     unittest.main()
