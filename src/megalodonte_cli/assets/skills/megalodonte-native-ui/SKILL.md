@@ -34,4 +34,10 @@ Coloque composições reutilizáveis em uma classe `Components` com métodos de 
 
 Antes de adicionar um componente, procure equivalentes em `megalodonte-components` e `disgust-components` e confira a API atual no código-fonte. Componentes gerais de layout, entrada e dados pertencem a `megalodonte-components`; identidade visual e controles específicos de Disgust pertencem a `disgust-components`. Crie a peça faltante na biblioteca adequada e use-a na aplicação. Preserve o comportamento e os dados existentes durante uma refatoração.
 
+Ao alterar código de uma biblioteca, rode seus testes e `./gradlew publishToMavenLocal` no repositório dela; depois valide o aplicativo consumidor. `includeBuild` permite testar a fonte local, mas não atualiza o artefato que outros projetos obtêm de `mavenLocal()`. Publicação remota e `git push` seguem suas próprias autorizações e regras do workspace.
+
+Ao corrigir um campo ou componente, busque usos equivalentes no aplicativo e nos consumidores relevantes e corrija o mesmo defeito onde ele ocorrer. Compare o significado dos dados antes de aplicar uma máscara indiscriminadamente: quantidade, valor monetário e medidas podem exigir escalas diferentes. Valide todos os usos afetados.
+
+Em campos brasileiros formatados, use `pack.utilities.FormatterPack` como fonte das máscaras (CPF, CNPJ, CPF/CNPJ, CEP, telefone e moeda) por meio dos componentes existentes. Se faltar um campo reutilizável, implemente-o na biblioteca adequada usando o mesmo `FormatterPack`, em vez de duplicar a máscara na tela. Confira o contrato do `State`: alguns componentes guardam o valor sem pontuação, e `InputColumnCurrency` guarda centavos. Adapte o valor ao modelo de domínio quando necessário, sem alterar silenciosamente seu significado.
+
 Antes de concluir, revise os arquivos de tela em busca de `getJavaFxNode`, `getChildren().add`, controles JavaFX nativos, CSS inline, `State.of` dentro de `render()` e campos de componentes. Se algum caso excepcional permanecer, explique-o explicitamente e não declare a tela conforme ao padrão.
