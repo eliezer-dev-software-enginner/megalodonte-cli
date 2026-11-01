@@ -295,12 +295,24 @@ public final class HomeScreen implements ScreenComponent {{
 }}''')
         write(root / "README.md", f'''# {display_name}
 
-Megalodonte desktop application using the **{mode}** UI mode.
+Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.
 
-Run `./gradlew test` to check the project and `./gradlew run` to launch it.
-Build an AppImage with `python3 scripts/package.py build appimage`.
-The standard GitHub Actions caller builds AppImage, DEB and MSI installers on a matching `v*` tag or manual dispatch.
-Replace the starter icon before publishing a release.{SKILL_README}''')
+## Executar
+
+Requer JDK 25 e ambiente gráfico. Na raiz do repositório:
+
+```sh
+./gradlew test
+./gradlew run
+```
+
+## Empacotar
+
+`python3 scripts/package.py build appimage` cria um AppImage no Linux. O workflow de GitHub Actions gera AppImage, DEB e MSI em tags `v*` ou por execução manual; consulte [o workflow](.github/workflows/package.yml) para os requisitos de cada sistema.
+
+## Código
+
+A tela inicial está em `src/main/`.{SKILL_README}''')
         write_skill_guidance(root, "desktop")
         for item in ("gradlew", "gradlew.bat"):
             shutil.copy2(ASSETS / item, root / item)

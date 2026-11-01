@@ -35,6 +35,10 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertEqual((app / "src/main/resources/icon.png").read_bytes()[:8],
                                  b"\x89PNG\r\n\x1a\n")
                 self.assertTrue((app / "scripts/package.py").is_file())
+                readme = (app / "README.md").read_text()
+                self.assertIn("## Executar", readme)
+                self.assertIn("## Empacotar", readme)
+                self.assertNotIn("/home/", readme)
                 self.assertIn("package-javafx.yml@main", (app / ".github/workflows/package.yml").read_text())
                 self.assertIn(dependency, (app / "build.gradle.kts").read_text())
                 self.assertEqual((app / "src/main/resources/views/home.view.jsonc").exists(), mode == "jsonc")
