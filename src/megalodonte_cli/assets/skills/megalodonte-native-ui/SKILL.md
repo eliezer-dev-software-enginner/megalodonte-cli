@@ -36,6 +36,10 @@ Quando a UI expõe uma sintaxe, ação ou estado pouco óbvio, explique-a junto 
 
 Modele a interface a partir do estado real: uma ação iniciar/parar deve ter um único controle que muda de rótulo e função; painéis de seleção e espaços reservados devem aparecer apenas quando há conteúdo utilizável, e uma única peça deve aproveitar a largura disponível. Quando uma operação demorada acontece, exponha progresso, sucesso e falha no aplicativo e nos logs da execução por terminal. Configurações que alteram processamento devem persistir e ser lidas tanto na prévia quanto na saída final; verifique os dois caminhos.
 
+Em tabelas, trate seleção como estado transitório: Esc e clique fora devem limpar o item, mantendo a notificação de seleção coerente para o consumidor. Aplique isso no componente reutilizável, não em cada tela. Para listagens longas, use a paginação da tabela existente; filtre o conjunto completo antes de paginar e mantenha os controles de navegação junto à tabela. Ao atualizar os dados, ajuste a página atual se ela deixar de existir e valide seleção, pesquisa e ações sobre o item visível.
+
+Geração de PDF, acesso a disco pesado, rede e abertura de arquivos ou aplicativos externos não devem executar na thread JavaFX. Faça uma cópia dos dados necessários antes de iniciar o trabalho em segundo plano; retorne alertas e mudanças visuais por `UI.runOnUi(...)`. Um visualizador externo pode bloquear ou faltar no sistema: registre o caminho do arquivo e a falha, e ofereça uma mensagem compreensível ao usuário. Teste o fluxo pelo clique real quando houver ambiente gráfico; compilação e teste da função de exportação isolada não demonstram que a janela continua responsiva.
+
 
 Antes de adicionar um componente, procure equivalentes em `megalodonte-components` e `disgust-components` e confira a API atual no código-fonte. Componentes gerais de layout, entrada e dados pertencem a `megalodonte-components`; identidade visual e controles específicos de Disgust pertencem a `disgust-components`. Crie a peça faltante na biblioteca adequada e use-a na aplicação. Preserve o comportamento e os dados existentes durante uma refatoração.
 
