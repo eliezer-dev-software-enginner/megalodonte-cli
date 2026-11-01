@@ -34,15 +34,17 @@ cd my-app
 
 ## Skills para agentes
 
-Todo projeto gerado, seja desktop, Android ou Roku, contém `skills/megalodonte-native-ui/SKILL.md` e um `AGENTS.md` que manda sincronizar e ler a skill antes de alterar a interface. A cópia é versionada com o projeto; o CLI empacota a versão canônica, então projetos novos recebem a versão do CLI instalado.
+Todo projeto gerado, seja desktop, Android ou Roku, contém `skills/megalodonte-native-ui/SKILL.md` para interface e `skills/criterioso/SKILL.md` para investigação, implementação e validação. O `AGENTS.md` indica quando ler cada uma. As cópias são versionadas com o projeto; o CLI empacota as versões canônicas, então projetos novos recebem as versões do CLI instalado.
 
-Para fazer a skill aparecer no menu `$` do Codex, na raiz do projeto execute:
+Para fazer as skills aparecerem no menu `$` do Codex, na raiz do projeto execute:
 
 ```sh
 megalodonte skills install --project .
 ```
 
-O comando cria um vínculo em `~/.codex/skills` (ou `$CODEX_HOME/skills`) para a skill do projeto. Se já houver uma instalação com esse nome apontando a outro lugar, o CLI informa o conflito e não a substitui. Depois de atualizar o CLI, atualize um projeto existente com `megalodonte skills sync --project .`; o vínculo acompanha o arquivo atualizado. A sincronização substitui a cópia da skill no projeto, então mantenha personalizações específicas em outra skill. Reinicie a conversa se o menu `$` não atualizar imediatamente.
+O comando cria vínculos em `~/.codex/skills` (ou `$CODEX_HOME/skills`) para as duas skills do projeto. Se já houver uma instalação com o mesmo nome apontando a outro lugar, o CLI informa o conflito e não a substitui. Depois de atualizar o CLI, atualize um projeto existente com `megalodonte skills sync --project .`; os vínculos acompanham os arquivos atualizados. A sincronização substitui as cópias no projeto, então mantenha personalizações específicas em outra skill. Reinicie a conversa se o menu `$` não atualizar imediatamente.
+
+Para invocá-las explicitamente, digite `$criterioso` em tarefas de desenvolvimento em geral ou `$megalodonte-native-ui` ao trabalhar na interface. As instruções em `AGENTS.md` também as tornam aplicáveis sem invocação explícita.
 
 Gradle needs a Java 25 toolchain. The wrapper may download Gradle, and the build needs its Megalodonte dependencies from Maven local, Maven Central, or the local workspace builds described below.
 

@@ -100,16 +100,23 @@ class NewApplicationTests(unittest.TestCase):
             for platform in ("desktop", "android", "roku"):
                 app = MODULE.create(f"skill-{platform}", "native", "Skill Demo", root, platform=platform)
                 skill = app / "skills/megalodonte-native-ui/SKILL.md"
+                general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
+                self.assertIn("skills/criterioso/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("megalodonte skills install --project .", (app / "README.md").read_text())
                 skill.write_text("stale")
+                general.write_text("stale")
                 self.assertEqual(MODULE.sync_skills(app), skill)
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("name: criterioso", general.read_text())
+                self.assertEqual((app / "AGENTS.md").read_text().count("skills/criterioso/SKILL.md"), 1)
                 codex_home = root / f"codex-{platform}"
                 link = MODULE.install_skills(app, codex_home)
                 self.assertTrue(link.is_symlink())
                 self.assertEqual(link.resolve(), skill.parent.resolve())
+                self.assertEqual((codex_home / "skills/criterioso").resolve(), general.parent.resolve())
                 self.assertEqual(MODULE.install_skills(app, codex_home), link)
 
 

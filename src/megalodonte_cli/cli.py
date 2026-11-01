@@ -17,6 +17,7 @@ from xml.sax.saxutils import escape
 
 ASSETS = files("megalodonte_cli").joinpath("assets")
 SKILL_NAME = "megalodonte-native-ui"
+SKILL_NAMES = (SKILL_NAME, "criterioso")
 
 
 def sync_skills(project: Path) -> Path:
@@ -24,32 +25,46 @@ def sync_skills(project: Path) -> Path:
     project = project.resolve()
     if not (project / "AGENTS.md").is_file():
         raise ValueError(f"Not a Megalodonte project with AGENTS.md: {project}")
-    source = ASSETS / "skills" / SKILL_NAME / "SKILL.md"
-    destination = project / "skills" / SKILL_NAME / "SKILL.md"
-    write(destination, source.read_text(encoding="utf-8"))
-    return destination
+    for name in SKILL_NAMES:
+        source = ASSETS / "skills" / name / "SKILL.md"
+        destination = project / "skills" / name / "SKILL.md"
+        write(destination, source.read_text(encoding="utf-8"))
+    agents = project / "AGENTS.md"
+    guidance = "\nPara investigação, implementação e validação de mudanças, leia `skills/criterioso/SKILL.md`.\n"
+    if "skills/criterioso/SKILL.md" not in agents.read_text(encoding="utf-8"):
+        with agents.open("a", encoding="utf-8") as stream:
+            stream.write(guidance)
+    return project / "skills" / SKILL_NAME / "SKILL.md"
 
 
 def install_skills(project: Path, codex_home: Path | None = None) -> Path:
     """Register the project skill in Codex without duplicating its content."""
-    source = (project.resolve() / "skills" / SKILL_NAME)
-    if not (source / "SKILL.md").is_file():
-        raise ValueError(f"Skill missing; run 'megalodonte skills sync --project {project}' first")
+    project = project.resolve()
     home = codex_home or Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    destination = home.expanduser() / "skills" / SKILL_NAME
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    canonical = Path(str(ASSETS / "skills" / SKILL_NAME)).resolve()
-    if destination.is_symlink() and destination.resolve() in (source, canonical):
-        return destination
-    if destination.exists() or destination.is_symlink():
-        raise FileExistsError(f"Skill already installed at {destination}; remove it explicitly before changing its source")
-    destination.symlink_to(source, target_is_directory=True)
-    return destination
+    destinations = []
+    for name in SKILL_NAMES:
+        source = project / "skills" / name
+        if not (source / "SKILL.md").is_file():
+            raise ValueError(f"Skill missing; run 'megalodonte skills sync --project {project}' first")
+        destination = home.expanduser() / "skills" / name
+        canonical = Path(str(ASSETS / "skills" / name)).resolve()
+        if destination.is_symlink() and destination.resolve() in (source, canonical):
+            destinations.append((destination, source, True))
+        elif destination.exists() or destination.is_symlink():
+            raise FileExistsError(f"Skill already installed at {destination}; remove it explicitly before changing its source")
+        else:
+            destinations.append((destination, source, False))
+    for destination, source, installed in destinations:
+        if not installed:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.symlink_to(source, target_is_directory=True)
+    return destinations[0][0]
 
 
 def write_skill_guidance(root: Path, platform: str) -> None:
-    source = ASSETS / "skills" / SKILL_NAME / "SKILL.md"
-    write(root / "skills" / SKILL_NAME / "SKILL.md", source.read_text(encoding="utf-8"))
+    for name in SKILL_NAMES:
+        source = ASSETS / "skills" / name / "SKILL.md"
+        write(root / "skills" / name / "SKILL.md", source.read_text(encoding="utf-8"))
     write(root / "AGENTS.md", f'''# Megalodonte — {platform}
 
 Antes de criar ou alterar interfaces, execute `megalodonte skills sync --project .`
@@ -58,14 +73,18 @@ Siga as regras comuns de composição, estado e tema; aplique as regras específ
 da plataforma indicada na skill. Se a skill ainda não estiver no catálogo do Codex,
 ela continua obrigatória por esta instrução. Se o CLI não estiver instalado,
 use a cópia versionada e informe que não foi possível sincronizar.''')
+    with (root / "AGENTS.md").open("a", encoding="utf-8") as stream:
+        stream.write("\n\nPara investigação, implementação e validação de mudanças, leia `skills/criterioso/SKILL.md`.\n")
 
 
 SKILL_README = f'''
 
 ## Skills para agentes
 
-Este projeto inclui [`skills/{SKILL_NAME}/SKILL.md`](skills/{SKILL_NAME}/SKILL.md).
-O `AGENTS.md` exige que agentes leiam a skill antes de alterar a interface; isso
+Este projeto inclui [`skills/{SKILL_NAME}/SKILL.md`](skills/{SKILL_NAME}/SKILL.md)
+para interface e [`skills/criterioso/SKILL.md`](skills/criterioso/SKILL.md)
+para investigação e entrega de mudanças.
+O `AGENTS.md` exige que agentes leiam as skills pertinentes; isso
 funciona mesmo sem instalá-la no catálogo. Para usar `$` no Codex, execute na
 raiz do projeto:
 
@@ -73,16 +92,17 @@ raiz do projeto:
 megalodonte skills install --project .
 ```
 
-O comando cria um vínculo em `~/.codex/skills` (ou `$CODEX_HOME/skills`), sem
-duplicar o arquivo. Reinicie a conversa se o menu de `$` não atualizar. Após
-atualizar o Megalodonte CLI, sincronize a versão mais recente da skill com:
+O comando cria vínculos para as duas skills em `~/.codex/skills` (ou
+`$CODEX_HOME/skills`), sem duplicar os arquivos. Reinicie a conversa se o menu
+de `$` não atualizar. Após atualizar o Megalodonte CLI, sincronize as versões
+mais recentes com:
 
 ```sh
 megalodonte skills sync --project .
 ```
 
-O projeto mantém sua própria cópia versionada da skill; a instalação no Codex
-acompanha as alterações dessa cópia automaticamente.
+O projeto mantém cópias versionadas; a instalação no Codex acompanha as
+alterações dessas cópias automaticamente.
 '''
 
 
