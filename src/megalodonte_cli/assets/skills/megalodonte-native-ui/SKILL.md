@@ -7,6 +7,8 @@ description: Criar ou refatorar interfaces Megalodonte com composição declarat
 
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 
+Para saídas extensas, logs ou análise de código, utilize o context-mode quando suas ferramentas estiverem disponíveis; caso contrário, faça buscas direcionadas e mantenha as saídas concisas, sem omitir evidências necessárias. A preferência e as salvaguardas de uso estão na skill `criterioso`.
+
 Construa a árvore de componentes de forma declarativa. `render()` e as fábricas de componentes retornam a expressão composta, com `children(...)` ou APIs reativas da biblioteca. Não monte uma árvore por etapas com variáveis de componentes, `getChildren().add(...)` ou `clear()` para depois retorná-la. Uma variável local pode representar um valor ou uma condição; não deve ser o mecanismo normal de montagem da UI.
 
 ```java

@@ -9,6 +9,10 @@ Use esta skill em tarefas de manutenção e evolução de software. Preserve o o
 
 Quando um pedido acumula correções e complementos, mantenha uma lista curta dos resultados exigidos e confira cada um antes de encerrar. Uma resposta anterior ou um commit não prova que a etapa atual foi concluída; não deixe requisitos implícitos, como a aplicação já aberta ou o artefato consumido, fora da validação.
 
+## Uso eficiente de contexto
+
+Quando o plugin context-mode estiver disponível, use suas ferramentas de execução e busca para analisar saídas extensas, logs, testes, documentação e dados, trazendo ao contexto somente os trechos e resultados necessários. Para várias consultas ao mesmo material, prefira indexar e pesquisar de forma direcionada. Respeite as permissões da sessão e evite indexar segredos ou dados privados sem necessidade; não execute ações externas não autorizadas. Não afirme que usou o plugin ou obteve economia medida sem confirmação. Se as ferramentas não estiverem disponíveis, use buscas específicas, limite saídas e processe dados localmente, sem perder diagnósticos ou verificações relevantes. Economia de tokens não reduz a cobertura necessária nem substitui a documentação do trabalho.
+
 ## Investigar o alvo real
 
 Antes de alterar código, identifique o arquivo, versão, processo e projeto que o usuário está usando. Confira o caminho aberto pela aplicação e, antes de commit ou push, `git rev-parse --show-toplevel` e o remoto. Compare cópias geradas, checkouts e dados locais; não conclua que uma mudança aparece na interface apenas porque existe no repositório que você editou. Não crie um clone nem substitua ou remova dados locais por suposição. Ao corrigir uma divergência, deixe explícita uma única fonte de verdade e preserve o que é próprio de cada ambiente.
