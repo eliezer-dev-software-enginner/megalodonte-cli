@@ -27,6 +27,10 @@ Teste apenas o projeto alterado e o menor percurso que demonstra o requisito: en
 
 Uma compilação bem-sucedida é evidência de compilação, não de comportamento. Quando o teste real não for possível, declare exatamente o que foi validado e o que resta. Não diga “tudo aparece”, “está funcionando” ou “foi entregue” sem verificar a instância, o projeto e o resultado correspondentes. Se houver falha, explique a causa encontrada e continue o trabalho autorizado em vez de encerrar com uma correção parcial.
 
+## Documentação contínua do projeto
+
+Em toda mudança de software, atualize proativamente a documentação pertinente no próprio projeto, sem esperar solicitação: registre o estado real, as decisões e trade-offs, a forma de uso, os próximos passos e quaisquer limitações em `docs/CONTEXT.md`, `docs/DECISIONS.md` e `docs/TODO.md` quando esses arquivos fizerem parte da convenção do projeto. Atualize também o README ou a documentação pública quando o uso mudar. Preserve o conteúdo existente, evite repetir informações sem necessidade e nunca descreva uma proposta ou implementação parcial como concluída.
+
 ## Tornar o recurso utilizável e entregar
 
 Recursos com sintaxe ou sequência não óbvia precisam de um exemplo de uso no README do projeto em uso e, se forem reutilizáveis, no modelo gerado. Na interface, use texto ou tooltip junto ao controle para explicar a ação; mostre o caminho entre clique, gatilho e resposta. Operações longas devem expor progresso, sucesso e erro também nos logs relevantes. Revise documentos antigos que contradigam o comportamento novo.
