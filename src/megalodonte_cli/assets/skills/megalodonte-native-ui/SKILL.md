@@ -7,7 +7,7 @@ description: Criar ou refatorar interfaces Megalodonte com composição declarat
 
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 
-Para saídas extensas, logs ou análise de código, utilize o context-mode quando suas ferramentas estiverem disponíveis; caso contrário, faça buscas direcionadas e mantenha as saídas concisas, sem omitir evidências necessárias. A preferência e as salvaguardas de uso estão na skill `criterioso`.
+Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
 
 Construa a árvore de componentes de forma declarativa. `render()` e as fábricas de componentes retornam a expressão composta, com `children(...)` ou APIs reativas da biblioteca. Não monte uma árvore por etapas com variáveis de componentes, `getChildren().add(...)` ou `clear()` para depois retorná-la. Uma variável local pode representar um valor ou uma condição; não deve ser o mecanismo normal de montagem da UI.
 
@@ -39,6 +39,10 @@ Coloque composições reutilizáveis em uma classe `Components` com métodos de 
 Ao criar ou alterar interfaces, mantenha a documentação do projeto atualizada durante o trabalho, sem esperar solicitação: registre comportamento implementado, decisões, limitações e próximos passos nos arquivos `docs/CONTEXT.md`, `docs/DECISIONS.md` e `docs/TODO.md` quando adotados pelo projeto; atualize também a documentação de uso afetada. Não apresente funcionalidade planejada ou parcial como concluída.
 
 Quando a UI expõe uma sintaxe, ação ou estado pouco óbvio, explique-a junto ao controle com texto ou tooltip. Tooltips devem esclarecer o efeito do controle no contexto atual, sem substituir um exemplo completo no README. Confira a interface com os dados realmente carregados; a existência de um fluxo no repositório não demonstra que ele aparece na tela. Ao compartilhar recursos entre desktop e Android, compare os valores de tema e configuração efetivamente usados nas duas plataformas, respeitando as APIs de cada uma.
+
+Em formulários de operações, apresente apenas os campos aplicáveis à operação escolhida, com nomes que indiquem os dados manipulados e exemplos concretos de caminhos ou referências. Evite expor opções internas ou de compatibilidade como campos sem explicação. Confira contraste dos valores selecionados no tema escuro e o acesso a todo o conteúdo de painéis, inclusive em janelas menores ou com rolagem.
+
+Tooltips de componentes reutilizáveis devem ficar ancorados ao componente, preferencialmente abaixo dele quando houver espaço, e não encobrir o texto sob o ponteiro. Ao alterar essa regra, implemente-a na biblioteca compartilhada e siga seu fluxo de publicação local; descreva no tooltip a finalidade do botão específico.
 
 No desktop, textos de instrução longos precisam caber na largura disponível. Use `TextFlow` de `megalodonte-components` envolvendo `Text` quando um parágrafo puder ultrapassar a janela, por exemplo `new TextFlow(new Text("Instruções..."))`. Confira o resultado em uma janela estreita; não dependa de uma linha única de `Text` nem de aumentar a largura da janela para esconder o problema. Essa orientação é específica da API desktop; consulte os componentes de texto da plataforma em Android e Roku.
 
