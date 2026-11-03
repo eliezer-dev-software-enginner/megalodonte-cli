@@ -28,6 +28,8 @@ Não chame `getJavaFxNode()` em código de aplicativo, inclusive para estilo, fo
 
 Para abrir links externos no navegador, use `megalodonte.base.Redirect.to(url)` ou `Redirect.to(url, onError)`. Não use `Desktop.getDesktop().browse(...)`, `URI.create(...)` nem crie threads na tela para essa finalidade; `Redirect` já encapsula a abertura assíncrona. O callback de erro é executado fora da thread de UI: se ele apresentar um alerta ou atualizar estado visual, encaminhe essa parte por `UI.runOnUi(...)`.
 
+Em aplicativos desktop Linux com ícone próprio, configure `MegalodonteApp.appIcon("/icon.png")` antes de iniciar e use uma subclasse exclusiva de `MegalodonteApplication` em `MegalodonteApp.run(AppHost.class, args, ...)`. O `WM_CLASS` dessa classe permite ao dock associar a janela ao `.desktop` correto; o framework deve usar um novo caminho de ícone quando o conteúdo mudar para evitar imagem antiga em cache. Confirme o resultado no aplicativo efetivamente iniciado, não apenas no recurso do projeto.
+
 Use os valores e padrões do tema via `ThemeManager` e `Props`. Preserve as cores padrão dos componentes sempre que possível. Uma identidade visual realmente exclusiva, como marca, pode ter tokens próprios no tema do aplicativo; evite hexadecimais e CSS inline espalhados pelas telas. Quando uma opção de estilo ou tamanho é recorrente, modele-a em `Props` ou num componente reutilizável.
 
 Não guarde `Column`, `Row`, `Container`, `Stack` ou outro componente como campo da tela. Se uma operação imperativa for realmente inevitável e não puder ser modelada por estado, guarde `Ref<T>` como campo e vincule a referência ao componente criado na árvore. `Ref` é exceção para casos como foco; não é substituto de `State` nem justificativa para manter uma árvore mutável.

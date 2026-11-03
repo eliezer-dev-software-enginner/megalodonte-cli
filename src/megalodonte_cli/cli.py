@@ -268,14 +268,18 @@ public final class Home extends ViewScript {{
             write(root / f"src/main/java/{package}/Main.java", f'''package {package};
 
 import megalodonte.application.MegalodonteApp;
+import megalodonte.application.MegalodonteApplication;
 import megalodonte.base.theme.ThemeManager;
 import megalodonte.theme.DefaultTheme;
 
 public final class Main {{
+    public static final class AppHost extends MegalodonteApplication {{}}
+
     public static void main(String[] args) {{
         ThemeManager.setTheme(new DefaultTheme());
         MegalodonteApp.appName({quoted_title});
-        MegalodonteApp.run(context -> context.useView(new HomeScreen()));
+        MegalodonteApp.appIcon("/icon.png");
+        MegalodonteApp.run(AppHost.class, args, context -> context.useView(new HomeScreen()));
     }}
 }}''')
             write(root / f"src/main/java/{package}/HomeScreen.java", f'''package {package};

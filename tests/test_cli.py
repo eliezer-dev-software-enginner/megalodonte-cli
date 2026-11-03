@@ -16,6 +16,9 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertEqual(packaging["app"]["name"], title)
                 if mode == "native":
                     main = (app / "src/main/java/escaped_native/Main.java").read_text()
+                    self.assertIn("AppHost extends MegalodonteApplication", main)
+                    self.assertIn('MegalodonteApp.appIcon("/icon.png")', main)
+                    self.assertIn("MegalodonteApp.run(AppHost.class, args", main)
                     screen = (app / "src/main/java/escaped_native/HomeScreen.java").read_text()
                     self.assertIn(r'" \tPath \\ Demo"', main)
                     self.assertIn(r'" \tPath \\ Demo"', screen)
