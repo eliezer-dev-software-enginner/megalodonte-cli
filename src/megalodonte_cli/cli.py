@@ -275,7 +275,7 @@ import megalodonte.theme.DefaultTheme;
 public final class Main {{
     public static final class AppHost extends MegalodonteApplication {{}}
 
-    public static void main(String[] args) {{
+    static void main(String[] args) {{
         ThemeManager.setTheme(new DefaultTheme());
         MegalodonteApp.appName({quoted_title});
         MegalodonteApp.appIcon("/icon.png");

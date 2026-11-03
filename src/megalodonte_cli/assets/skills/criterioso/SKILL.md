@@ -23,6 +23,8 @@ Reproduza ou rastreie o cenário descrito, inclusive a sequência de cliques, en
 
 ## Implementar no lugar certo
 
+Em projetos com Java 25 ou posterior, o método de entrada `main` não precisa ser `public`; omita esse modificador quando não houver exigência externa de API ou compatibilidade. Omita também `String[] args` quando não for usado. Se os argumentos forem encaminhados ao framework ou necessários ao comportamento da aplicação, mantenha-os; em projetos com Java anterior, preserve as exigências da versão suportada.
+
 Separe mecanismos genéricos de regras do produto. Um editor ou gerador não deve esconder comandos, respostas e decisões que pertencem ao projeto gerado. Alterar o gerador não atualiza automaticamente projetos existentes: ajuste o projeto em uso e o gerador quando ambos fazem parte do objetivo. Migre a lógica completa, com estado e testes relevantes, antes de remover o código antigo; verifique que o empacotamento inclui os arquivos e APIs necessários.
 
 Procure usos equivalentes do comportamento defeituoso e corrija os afetados, respeitando diferenças de domínio. Prefira bibliotecas e componentes existentes, verificando a API real antes de usá-la. Ao mudar uma biblioteca consumida localmente, execute seus testes, publique em Maven Local quando esse for o mecanismo de consumo, e confira o artefato atualizado no projeto-alvo. Não rode novamente testes de outras aplicações sem pedido explícito do usuário. `includeBuild` e compilação da fonte não provam que o aplicativo instalado recebeu a mudança.

@@ -18,6 +18,8 @@ class NewApplicationTests(unittest.TestCase):
                     main = (app / "src/main/java/escaped_native/Main.java").read_text()
                     self.assertIn("AppHost extends MegalodonteApplication", main)
                     self.assertIn('MegalodonteApp.appIcon("/icon.png")', main)
+                    self.assertIn("static void main(String[] args)", main)
+                    self.assertNotIn("public static void main", main)
                     self.assertIn("MegalodonteApp.run(AppHost.class, args", main)
                     screen = (app / "src/main/java/escaped_native/HomeScreen.java").read_text()
                     self.assertIn(r'" \tPath \\ Demo"', main)
