@@ -28,6 +28,46 @@ On desktop, `jsonc` creates a declarative starter view and a Java `ViewScript`; 
 
 Native desktop starters register their bundled icon and use an application-specific JavaFX host, so Linux docks can match the running window to its own icon.
 
+The native starter uses this pattern in `Main.java`:
+
+```java
+import megalodonte.application.MegalodonteApp;
+import megalodonte.application.MegalodonteApplication;
+import megalodonte.base.theme.ThemeManager;
+
+public final class Main {
+    public static final class AppHost extends MegalodonteApplication {}
+
+    static void main(String[] args) {
+        ThemeManager.setTheme(new MyTheme());
+        MegalodonteApp.appName("My App");
+        MegalodonteApp.appIcon("/icon.png");
+        MegalodonteApp.run(AppHost.class, args, context -> {
+            context.javafxStage().setMinWidth(980);
+            context.javafxStage().setMinHeight(650);
+            context.useView(new HomeScreen(), 1260, 780);
+        });
+    }
+}
+```
+
+`MyTheme` and `HomeScreen` stand for your theme and screen classes; keep any
+additional startup logic your application needs. The generated starter uses
+`DefaultTheme` and can use its default window dimensions.
+
+If Linux shows the wrong dock icon, check `appName`, `appIcon`, the application's
+own `AppHost` and the `StartupWMClass` of its `.desktop` entry. On X11, run
+`xprop WM_CLASS` and click the window to inspect its actual class. Development
+entries are written under `~/.local/share/applications/` and refer to an icon
+whose filename contains a content hash. Rebuild and restart after source changes;
+rebuild and reinstall packaged applications. Dock behavior and Wayland
+diagnostics vary by desktop environment.
+
+For JSONC starters, set `app.icon=/icon.png` in `application.properties` to
+configure the window icon. The shared JSONC launcher currently uses a shared
+JavaFX host, so a unique dock icon is not guaranteed by this setting alone;
+an application-specific Java entry point is needed for the host-based approach.
+
 ```sh
 cd my-app
 ./gradlew test

@@ -297,6 +297,59 @@ public final class HomeScreen implements ScreenComponent {{
                 new Text({quoted_title}, new TextProps().fontSize(28)));
     }}
 }}''')
+        icon_help = '''No Linux, o ícone no dock pode depender do `WM_CLASS` da janela e da entrada `.desktop`, além do PNG da janela. Este projeto nativo já configura `MegalodonteApp.appName(...)`, `MegalodonteApp.appIcon("/icon.png")` e um `AppHost` exclusivo em `Main.java`. Substitua `src/main/resources/icon.png` pelo ícone desejado e mantenha o mesmo caminho em `packaging.toml`. Ao atualizar o ícone ou o host, reconstrua e reinicie a aplicação; para uma versão instalada, reconstrua e reinstale o pacote.
+
+O padrão de inicialização é:
+
+```java
+import megalodonte.application.MegalodonteApp;
+import megalodonte.application.MegalodonteApplication;
+import megalodonte.base.theme.ThemeManager;
+
+public final class Main {
+    public static final class AppHost extends MegalodonteApplication {}
+
+    static void main(String[] args) {
+        ThemeManager.setTheme(new MyTheme());
+        MegalodonteApp.appName("Minha aplicação");
+        MegalodonteApp.appIcon("/icon.png");
+        MegalodonteApp.run(AppHost.class, args, context -> {
+            context.javafxStage().setMinWidth(980);
+            context.javafxStage().setMinHeight(650);
+            context.useView(new HomeScreen(), 1260, 780);
+        });
+    }
+}
+```
+
+`MyTheme` e `HomeScreen` representam o tema e a tela do projeto; substitua-os pelas classes existentes. Mantenha qualquer outra inicialização necessária.
+
+Em sessões X11, `xprop WM_CLASS` e um clique na janela mostram a classe real. Compare-a com `StartupWMClass` em `~/.local/share/applications/` e na entrada do aplicativo instalado. O framework cria uma entrada de desenvolvimento com o nome da aplicação e um arquivo de ícone cujo nome inclui um hash do conteúdo; confira se a entrada aponta para o PNG esperado. O dock pode aplicar regras próprias e o diagnóstico no Wayland pode ser diferente.''' if mode == "native" else '''Para configurar o ícone da janela, adicione `app.icon=/icon.png` em `src/main/resources/application.properties` e substitua `src/main/resources/icon.png` pelo PNG desejado; mantenha também o caminho correspondente em `packaging.toml`. Reconstrua e reinicie a aplicação, ou reconstrua e reinstale o pacote quando estiver usando uma versão instalada.
+
+No Linux, o ícone no dock também depende da associação entre `WM_CLASS` e a entrada `.desktop`. O inicializador JSONC atual usa um host JavaFX compartilhado, portanto configurar apenas `app.icon` não garante um ícone exclusivo no dock. Em X11, use `xprop WM_CLASS` e clique na janela para investigar; a solução com host próprio exige uma entrada Java específica da aplicação. A classe do host pode ser declarada nessa entrada assim:
+
+```java
+import megalodonte.application.MegalodonteApp;
+import megalodonte.application.MegalodonteApplication;
+import megalodonte.base.theme.ThemeManager;
+
+public final class Main {
+    public static final class AppHost extends MegalodonteApplication {}
+
+    static void main(String[] args) {
+        ThemeManager.setTheme(new MyTheme());
+        MegalodonteApp.appName("Minha aplicação");
+        MegalodonteApp.appIcon("/icon.png");
+        MegalodonteApp.run(AppHost.class, args, context -> {
+            context.javafxStage().setMinWidth(980);
+            context.javafxStage().setMinHeight(650);
+            context.useView(new HomeScreen(), 1260, 780);
+        });
+    }
+}
+```
+
+Esse exemplo ilustra o padrão para uma tela Java; não é um substituto direto do inicializador JSONC. Para aplicá-lo ao JSONC, adapte a entrada Java preservando a leitura da configuração, a criação da view declarativa e seu fechamento. `MyTheme` e `HomeScreen` representam classes da aplicação. No Wayland, o diagnóstico pode ser diferente.'''
         write(root / "README.md", f'''# {display_name}
 
 Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.
@@ -309,6 +362,10 @@ Requer JDK 25 e ambiente gráfico. Na raiz do repositório:
 ./gradlew test
 ./gradlew run
 ```
+
+## Ícone no Linux
+
+{icon_help}
 
 ## Empacotar
 

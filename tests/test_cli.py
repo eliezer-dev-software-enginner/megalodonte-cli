@@ -43,6 +43,17 @@ class NewApplicationTests(unittest.TestCase):
                 readme = (app / "README.md").read_text()
                 self.assertIn("## Executar", readme)
                 self.assertIn("## Empacotar", readme)
+                self.assertIn("## Ícone no Linux", readme)
+                self.assertIn("xprop WM_CLASS", readme)
+                self.assertIn("ThemeManager.setTheme(new MyTheme())", readme)
+                self.assertIn("context.javafxStage().setMinWidth(980)", readme)
+                self.assertIn("context.useView(new HomeScreen(), 1260, 780)", readme)
+                if mode == "native":
+                    self.assertIn("public static final class AppHost extends MegalodonteApplication {}", readme)
+                    self.assertIn("MegalodonteApp.run(AppHost.class, args", readme)
+                else:
+                    self.assertIn("app.icon=/icon.png", readme)
+                    self.assertIn("host JavaFX compartilhado", readme)
                 self.assertNotIn("/home/", readme)
                 self.assertIn("package-javafx.yml@main", (app / ".github/workflows/package.yml").read_text())
                 self.assertIn(dependency, (app / "build.gradle.kts").read_text())
@@ -112,6 +123,7 @@ class NewApplicationTests(unittest.TestCase):
                 general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
+                self.assertIn("README principal em inglês", general.read_text())
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("skills/criterioso/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("megalodonte skills install --project .", (app / "README.md").read_text())
@@ -120,6 +132,7 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertEqual(MODULE.sync_skills(app), skill)
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
+                self.assertIn("README principal em inglês", general.read_text())
                 self.assertEqual((app / "AGENTS.md").read_text().count("skills/criterioso/SKILL.md"), 1)
                 codex_home = root / f"codex-{platform}"
                 link = MODULE.install_skills(app, codex_home)
