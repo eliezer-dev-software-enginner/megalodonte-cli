@@ -122,6 +122,7 @@ class NewApplicationTests(unittest.TestCase):
                 skill = app / "skills/megalodonte-native-ui/SKILL.md"
                 general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("ErrorReporter.register", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("README principal em inglês", general.read_text())
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
@@ -131,6 +132,7 @@ class NewApplicationTests(unittest.TestCase):
                 general.write_text("stale")
                 self.assertEqual(MODULE.sync_skills(app), skill)
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("ErrorReporter.register", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("README principal em inglês", general.read_text())
                 self.assertEqual((app / "AGENTS.md").read_text().count("skills/criterioso/SKILL.md"), 1)
