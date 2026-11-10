@@ -46,6 +46,30 @@ state, or update cached JSONC views. For the full supported-change matrix and
 rollback limits, see the [base live reload guide](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
 
 Validate the CLI with `PYTHONPATH=src python -m unittest discover -s tests`.
+
+### Experimental persistent native windows
+
+For Java workers explicitly using `NativeWorker.Application` from the updated
+base library:
+
+```sh
+megalodonte dev --native-host --worker-main your.package.WorkerMain
+```
+
+This keeps a permanent JavaFX host and replaces worker JVMs after successful
+builds, including class additions/removals and structural changes. It does not
+adapt ordinary application Main classes or existing component trees automatically.
+JSON is internal messaging; application code remains Java. The current prototype
+supports text, buttons, inputs, rows and columns; stable input IDs retain edited
+text, while arbitrary business state requires explicit migration.
+
+Host runtime changes require a manual stop/start; this mode never automatically
+restarts the host. Rejected candidates keep the previous worker and windows.
+Generation files remain until the session ends. Closing any window ends the
+prototype host session. See the [native messaging design and API](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/NATIVE_MESSAGING.md).
+
+Explicit integration check (display and published artifacts required):
+`PYTHONPATH=src python tests/integration_native_host.py`.
 The opt-in `PYTHONPATH=src python tests/integration_live_reload.py` additionally
 requires JDK 25, local artifacts, Gradle dependencies and a display, and exercises
 a temporary generated consumer without touching user projects.

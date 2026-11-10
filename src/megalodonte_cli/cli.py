@@ -375,6 +375,12 @@ memória. Use `--offline` para dependências já disponíveis no cache e Ctrl+C 
 encerrar. O cache de views JSONC não está integrado a esse mecanismo.
 Veja os [limites e exemplos do live reload](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
 
+Há também um hospedeiro nativo experimental para workers Java que implementam
+explicitamente `NativeWorker.Application`: `megalodonte dev --native-host
+--worker-main seu.pacote.WorkerMain` (em uma única linha). Ele mantém as janelas
+ao substituir o processo do worker. Não adapta automaticamente o `Main` gerado
+ou os componentes existentes. Consulte a [API e as limitações](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/NATIVE_MESSAGING.md).
+
 ## Ícone no Linux
 
 {icon_help}

@@ -267,13 +267,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--restart-on-incompatible', action='store_true',
                         help='Restart on structural/dependency changes, losing in-memory state')
+    parser.add_argument('--native-host', action='store_true',
+                        help='Experimental persistent-window host; requires the NativeWorker Java API')
+    parser.add_argument('--worker-main', help='Java entry class implementing the experimental NativeWorker protocol')
     parser.add_argument('--debounce', type=float, default=.6, help='Quiet seconds before compiling (default .6)')
     args = parser.parse_args(argv)
     if not .1 <= args.debounce <= 30:
         parser.error('--debounce must be between .1 and 30 seconds')
+    if args.native_host != bool(args.worker_main):
+        parser.error('--native-host and --worker-main must be used together')
+    if args.native_host and args.restart_on_incompatible:
+        parser.error('--native-host never restarts the window host; omit --restart-on-incompatible')
     try:
         with tempfile.TemporaryDirectory(prefix='megalodonte-live-') as directory:
-            session = DevelopmentSession(args.project, Path(directory), args.offline, args.restart_on_incompatible)
+            if args.native_host:
+                from .native_dev import NativeDevelopmentSession
+                session = NativeDevelopmentSession(args.project, Path(directory), args.offline, args.worker_main)
+            else:
+                session = DevelopmentSession(args.project, Path(directory), args.offline, args.restart_on_incompatible)
             try:
                 return session.run(args.debounce)
             finally:
