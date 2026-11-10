@@ -42,7 +42,11 @@ No live reload, preserve os caches próprios de cada build Gradle: não imponha 
 compartilhar o histórico incremental entre builds.
 
 Preservar janelas no live reload significa manter os mesmos Stage/Scene, não
-fechar e reabrir janelas semelhantes. O protótipo `NativeWindowHost` do base mantém
+fechar e reabrir janelas semelhantes. Janelas secundárias gerenciadas precisam
+ser registradas explicitamente no ciclo de montagem e removidas no fechamento;
+não dependa apenas de `Window.getWindows()`. Valide a atualização com a janela
+secundária já criada e confira identidade de Stage/Scene, estado e montagem.
+O protótipo `NativeWindowHost` do base mantém
 janelas em um hospedeiro e troca workers Java por mensagens JSON internas; isso
 continua sendo modo nativo, não construção de UI JSONC. Ainda exige API explícita,
 tem cobertura limitada de controles e usa a opção experimental
