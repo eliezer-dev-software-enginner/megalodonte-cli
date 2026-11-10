@@ -34,8 +34,9 @@ Preservar janelas no live reload significa manter os mesmos Stage/Scene, não
 fechar e reabrir janelas semelhantes. O protótipo `NativeWindowHost` do base mantém
 janelas em um hospedeiro e troca workers Java por mensagens JSON internas; isso
 continua sendo modo nativo, não construção de UI JSONC. Ainda exige API explícita,
-tem cobertura limitada de controles e não está integrado ao `megalodonte dev` ou
-às telas existentes. Não afirme migração automática de estado de negócio. Consulte
+tem cobertura limitada de controles e usa a opção experimental
+`megalodonte dev --native-host --worker-main pacote.WorkerMain`. Não adapta o Main
+normal ou telas existentes automaticamente. Não afirme migração automática de estado de negócio. Consulte
 `docs/NATIVE_MESSAGING.md` do base para status, limites e testes de identidade.
 
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
