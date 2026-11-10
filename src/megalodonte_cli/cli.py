@@ -351,7 +351,7 @@ public final class Main {
 
 Esse exemplo ilustra o padrão para uma tela Java; não é um substituto direto do inicializador JSONC. Para aplicá-lo ao JSONC, adapte a entrada Java preservando a leitura da configuração, a criação da view declarativa e seu fechamento. `MyTheme` e `HomeScreen` representam classes da aplicação. No Wayland, o diagnóstico pode ser diferente.'''
         write(root / "docs/images/live-reload.svg",
-              ASSETS.joinpath("live-reload-pt.svg").read_text(encoding="utf-8"))
+              ASSETS.joinpath("live-reload-architecture-pt.svg").read_text(encoding="utf-8"))
         write(root / "README.md", f'''# {display_name}
 
 Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.

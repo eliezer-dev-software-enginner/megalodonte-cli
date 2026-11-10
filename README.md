@@ -54,7 +54,7 @@ requires restarting the development session. Java token comparison detects the
 smallest source difference, while javac still compiles class/source units and
 affected dependents. Tokenization cannot bypass JVM class-shape restrictions.
 
-![Incremental live reload architecture](src/megalodonte_cli/assets/live-reload-en.svg)
+![Incremental live reload architecture](src/megalodonte_cli/assets/live-reload-architecture-en.svg)
 
 Validate the CLI with `PYTHONPATH=src python -m unittest discover -s tests`.
 
