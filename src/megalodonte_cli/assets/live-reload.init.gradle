@@ -18,6 +18,20 @@ gradle.projectsLoaded {
             throw new GradleException('Live reload requires a single-project desktop application plugin build')
         }
         def sources = root.extensions.getByType(SourceSetContainer).getByName('main')
+        def world = new File(session, 'world/project')
+        def originalJava = sources.java.srcDirs.collect { it.canonicalFile }
+        def originalResources = sources.resources.srcDirs.collect { it.canonicalFile }
+        def mirror = { File directory ->
+            if (!directory.toPath().startsWith(root.projectDir.canonicalFile.toPath())) {
+                throw new GradleException("Live reload source directory is outside the project: ${directory}")
+            }
+            new File(world, root.projectDir.canonicalFile.toPath().relativize(directory.toPath()).toString())
+        }
+        // javac and processResources consume the content-addressed mirror. Equal
+        // files keep their timestamps, allowing Gradle's dependency analysis to
+        // compile only affected source units.
+        sources.java.setSrcDirs(originalJava.collect(mirror))
+        sources.resources.setSrcDirs(originalResources.collect(mirror))
         if (sources.output.files.any { !it.canonicalFile.toPath().startsWith(session.toPath()) }) {
             throw new GradleException('Custom output directories outside the shadow world are not supported')
         }
@@ -42,7 +56,7 @@ gradle.projectsLoaded {
                     environment: run.environment.findAll { key, value -> System.getenv(key) != value.toString() },
                     outputs: sources.output.files.collect { it.absolutePath },
                     classpath: sources.runtimeClasspath.files.collect { it.absolutePath },
-                    watch: (sources.allSource.srcDirs + [root.file('build.gradle'), root.file('build.gradle.kts'),
+                    watch: (originalJava + originalResources + [root.file('build.gradle'), root.file('build.gradle.kts'),
                             root.file('settings.gradle'), root.file('settings.gradle.kts'), root.file('gradle.properties'),
                             root.file('gradle'), root.file('buildSrc')]).collect { it.absolutePath }
                 ]

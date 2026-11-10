@@ -350,6 +350,8 @@ public final class Main {
 ```
 
 Esse exemplo ilustra o padrão para uma tela Java; não é um substituto direto do inicializador JSONC. Para aplicá-lo ao JSONC, adapte a entrada Java preservando a leitura da configuração, a criação da view declarativa e seu fechamento. `MyTheme` e `HomeScreen` representam classes da aplicação. No Wayland, o diagnóstico pode ser diferente.'''
+        write(root / "docs/images/live-reload.svg",
+              ASSETS.joinpath("live-reload-pt.svg").read_text(encoding="utf-8"))
         write(root / "README.md", f'''# {display_name}
 
 Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.
@@ -367,7 +369,10 @@ Requer JDK 25 e ambiente gráfico. Na raiz do repositório:
 
 Para telas Java nativas, execute `megalodonte dev --project .` com o CLI e as
 bibliotecas core/base atualizados (e reactivity, se usada). O build ocorre numa
-área temporária; mudanças compatíveis atualizam as janelas gerenciadas mantendo
+área temporária. O primeiro envio ao mundo de compilação registra o manifesto do
+projeto; os seguintes enviam deltas de arquivos, tokens e símbolos. Recursos são
+armazenados por hash fora do JSON. Alterações em `.env` exigem reiniciar a sessão
+e seu conteúdo não é gravado no protocolo. Mudanças compatíveis atualizam as janelas gerenciadas mantendo
 o estado das telas. Erros de compilação conservam a versão em execução.
 Mudanças estruturais ou de dependências pedem reinício. A opção
 `--restart-on-incompatible` permite reinício automático com perda do estado em
@@ -375,11 +380,14 @@ memória. Use `--offline` para dependências já disponíveis no cache e Ctrl+C 
 encerrar. O cache de views JSONC não está integrado a esse mecanismo.
 Veja os [limites e exemplos do live reload](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
 
+![Funcionamento do live reload](docs/images/live-reload.svg)
+
 Há também um hospedeiro nativo experimental para workers Java que implementam
 explicitamente `NativeWorker.Application`: `megalodonte dev --native-host
 --worker-main seu.pacote.WorkerMain` (em uma única linha). Ele mantém as janelas
 ao substituir o processo do worker. Não adapta automaticamente o `Main` gerado
 ou os componentes existentes. Consulte a [API e as limitações](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/NATIVE_MESSAGING.md).
+Esse protótipo é separado da mensageria incremental entre projeto e compilador.
 
 ## Ícone no Linux
 

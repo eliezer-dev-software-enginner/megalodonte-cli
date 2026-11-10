@@ -17,6 +17,17 @@ Mudanças estruturais, classes novas e dependências podem exigir reinício;
 não apresente reinício de processo como hot reload com estado preservado. JSONC,
 builds multimódulo e janelas fora de Context/ScreenManager exigem integração própria.
 
+A mensageria do mundo de compilação representa qualquer projeto por um manifesto
+JSON inicial e deltas posteriores de arquivos, tokens e símbolos. Ela não deve
+conhecer telas, entidades ou regras de uma aplicação consumidora. Conteúdos ficam
+num armazenamento local por hash; recursos binários não devem virar Base64 no
+JSON. A resposta contém status, diagnósticos e metadados dos artefatos compilados,
+em vez de devolver a aplicação inteira. `.env` participa apenas com caminho,
+tamanho e hash, nunca com valores, e sua alteração exige reinício. Tokenização
+serve para detectar e classificar mudanças; não prometa compilar ou substituir um
+campo Java isoladamente, pois javac e a JVM operam com unidades/classes e suas
+dependências. Documente separadamente compilação, ativação e preservação de janela.
+
 Dependências por builds compostos (`includeBuild`) são suportadas; o aplicativo
 supervisionado ainda deve ser de projeto único. As bibliotecas mantêm suas saídas
 próprias e entram como dependências congeladas; mudanças nas fontes delas exigem
@@ -38,6 +49,8 @@ tem cobertura limitada de controles e usa a opção experimental
 `megalodonte dev --native-host --worker-main pacote.WorkerMain`. Não adapta o Main
 normal ou telas existentes automaticamente. Não afirme migração automática de estado de negócio. Consulte
 `docs/NATIVE_MESSAGING.md` do base para status, limites e testes de identidade.
+Esse protótipo de UI/worker é separado do protocolo projeto-compilador e não deve
+ser apresentado como a implementação da mensageria incremental da aplicação toda.
 
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 

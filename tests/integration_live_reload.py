@@ -51,6 +51,10 @@ def main():
         try:
             assert session.build(fingerprint(session.watch))
             pid = session.process.pid
+            request = json.loads((session_dir / 'world/protocol/latest-request.json').read_text())
+            assert request['type'] == 'PROJECT_SNAPSHOT'
+            assert any(item['path'].endswith('HomeScreen.java') and item['token_sha256']
+                       for item in request['entries'])
             assert not (app / 'build').exists(), 'Build must stay in isolated world'
             assert (library / 'build/libs/local-library-1.jar').is_file()
             assert not (session_dir / 'build/classes/java/main/example/LocalLibrary.class').exists()
@@ -60,6 +64,14 @@ def main():
             source.write_text(original.replace('Live reload integration', 'Updated live'))
             assert session.build(fingerprint(session.watch))
             assert session.process.pid == pid
+            request = json.loads((session_dir / 'world/protocol/latest-request.json').read_text())
+            assert request['type'] == 'PROJECT_DELTA'
+            assert [item['path'] for item in request['delta']['changed']] == [
+                'src/main/java/reload_demo/HomeScreen.java']
+            compiled = json.loads((session_dir / 'world/protocol/latest-response.json').read_text())
+            assert compiled['status'] == 'APPLIED'
+            assert any(item['path'].endswith('HomeScreen.class')
+                       for item in compiled['artifactDelta']['changed'])
             assert '1 windows' in (session_dir / 'response').read_text()
             assert fingerprint(libraries) == library_hashes, 'App edits must not corrupt included JARs'
             for jar, entry in zip(libraries, ['example/LocalLibrary.class', 'nested/Value.class']):
@@ -70,12 +82,24 @@ def main():
             assert session.process.poll() is None
             source.write_text(original)
             assert session.build(fingerprint(session.watch))
+            resource = app / 'src/main/resources/live-reload.txt'
+            resource.write_text('resource generation')
+            assert session.build(fingerprint(session.watch))
+            request = json.loads((session_dir / 'world/protocol/latest-request.json').read_text())
+            assert request['delta']['added'][0]['kind'] == 'resource'
+            environment = app / '.env'
+            environment.write_text('PRIVATE_VALUE=never-copy-this')
+            assert not session.build(fingerprint(session.watch))
+            request_text = (session_dir / 'world/protocol/latest-request.json').read_text()
+            assert 'never-copy-this' not in request_text
+            assert json.loads(request_text)['requiresRestart']
+            assert session.process.pid == pid and session.process.poll() is None
             # Adding a dependency changes the runtime. No automatic restart.
             build.write_text(build.read_text().replace('dependencies {', 'dependencies {\n    runtimeOnly("org.slf4j:slf4j-simple:2.0.17")'))
             assert not session.build(fingerprint(session.watch))
             assert session.process.pid == pid
             assert session.process.poll() is None
-            print('PASS: nested composite incremental builds, intact library JARs, in-process reload, compile-error recovery and dependency guard')
+            print('PASS: project manifest/deltas, resources, private environment restart, nested incremental builds, reload and failure recovery')
         finally:
             session.stop()
 

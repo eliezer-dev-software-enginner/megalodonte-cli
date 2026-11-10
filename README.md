@@ -17,7 +17,12 @@ For a non-editable install, use `pipx install .`. An editable install immediatel
 From an existing native desktop application, use `megalodonte dev --project .`
 (`--offline` uses cached dependencies). The CLI watches source and resource
 changes, debounces saves, compiles incrementally with Gradle in a temporary world,
-and sends complete successful generations to the running JVM. The normal project
+and sends complete successful generations to the running JVM. The first build
+records a JSON manifest of project files, Java tokens/symbols and hashes; later
+builds record only deltas. File contents use a local content-addressed store, so
+binary resources are not inflated into JSON. Compiler responses contain status
+and output artifact hashes rather than retransmitting the entire application.
+The normal project
 `build/` and running dependency JARs are not overwritten. All visible windows
 registered through `Context` or `ScreenManager` rerender with the same screen
 instances. Logs report applied class/window counts and failures.
@@ -44,10 +49,19 @@ session. `--debounce 0.8` changes the quiet interval in seconds.
 This does not copy raw memory, reinitialize existing objects, migrate arbitrary
 state, or update cached JSONC views. For the full supported-change matrix and
 rollback limits, see the [base live reload guide](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
+Environment-file values are never placed in protocol JSON; changing `.env`
+requires restarting the development session. Java token comparison detects the
+smallest source difference, while javac still compiles class/source units and
+affected dependents. Tokenization cannot bypass JVM class-shape restrictions.
+
+![Incremental live reload architecture](src/megalodonte_cli/assets/live-reload-en.svg)
 
 Validate the CLI with `PYTHONPATH=src python -m unittest discover -s tests`.
 
 ### Experimental persistent native windows
+
+This is a separate experiment, not the project-to-compiler messaging described
+above. It should not be inferred as automatic serialization of an existing app.
 
 For Java workers explicitly using `NativeWorker.Application` from the updated
 base library:

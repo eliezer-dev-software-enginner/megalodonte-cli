@@ -13,6 +13,8 @@ import tempfile
 import time
 import zipfile
 
+from .world import CompilationWorld
+
 
 def fingerprint(paths: list[Path]) -> dict[str, str]:
     """Content hashes avoid recompiling on timestamp-only editor saves."""
@@ -120,11 +122,24 @@ class DevelopmentSession:
         self.generation = 0
         self.last_good = None
         self.watcher = SourceWatcher()
+        self.world = CompilationWorld(self.project, self.session)
+        self.pending_world_request = None
         self.watch = [self.project / 'src', self.project / 'build.gradle.kts', self.project / 'build.gradle',
                       self.project / 'settings.gradle.kts', self.project / 'settings.gradle',
-                      self.project / 'gradle.properties', self.project / 'gradle', self.project / 'buildSrc']
+                      self.project / 'gradle.properties', self.project / 'gradle', self.project / 'buildSrc',
+                      self.project / '.env', self.project / '.env.local', self.project / '.env.development',
+                      self.project / '.env.production', self.project / '.env.test']
 
     def prepare(self) -> dict | None:
+        request = self.world.update()
+        self.pending_world_request = request
+        delta = request['delta']
+        changed = len(delta['added']) + len(delta['changed']) + len(delta['deleted'])
+        print(f"[live-reload] Virtual world {request['type'].lower()}: {changed} changed inputs.", flush=True)
+        if request['requiresRestart'] and self.process is not None:
+            self.world.response(request, 'RESTART_REQUIRED', detail='Environment file changed')
+            print('[live-reload] Environment changed; restart is required. Secret contents were not copied.', flush=True)
+            return None
         wrapper = self.project / ('gradlew.bat' if os.name == 'nt' else 'gradlew')
         if not wrapper.is_file():
             raise ValueError(f'Gradle wrapper not found in {self.project}')
@@ -141,9 +156,11 @@ class DevelopmentSession:
         print('[live-reload] Compiling shadow world (Gradle incremental build)...', flush=True)
         result = subprocess.run(command, cwd=self.project)
         if result.returncode:
+            self.world.response(request, 'FAILED', detail='Gradle compilation failed')
             print('[live-reload] Build failed; running application was not changed.', flush=True)
             return None
-        return json.loads((self.session / 'launch.json').read_text(encoding='utf-8'))
+        description = json.loads((self.session / 'launch.json').read_text(encoding='utf-8'))
+        return description
 
     def start(self, description: dict, generation: Path) -> None:
         # Validate launch support before stopping an existing process.
@@ -236,10 +253,14 @@ class DevelopmentSession:
         else:
             accepted = self.reload(description, generation)
         if accepted:
+            if self.pending_world_request is not None:
+                self.world.response(self.pending_world_request, 'APPLIED', (Path(path) for path in description['outputs']))
             if self.last_good is not None:
                 shutil.rmtree(self.last_good)
             self.last_good = generation
         else:
+            if self.pending_world_request is not None:
+                self.world.response(self.pending_world_request, 'REJECTED', detail='Runtime did not accept generation')
             shutil.rmtree(generation)
         return accepted
 

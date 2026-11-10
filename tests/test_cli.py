@@ -48,6 +48,10 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("ThemeManager.setTheme(new MyTheme())", readme)
                 self.assertIn("context.javafxStage().setMinWidth(980)", readme)
                 self.assertIn("context.useView(new HomeScreen(), 1260, 780)", readme)
+                self.assertIn("docs/images/live-reload.svg", readme)
+                diagram = app / "docs/images/live-reload.svg"
+                self.assertTrue(diagram.is_file())
+                self.assertIn("mundo de compilação incremental", diagram.read_text())
                 if mode == "native":
                     self.assertIn("public static final class AppHost extends MegalodonteApplication {}", readme)
                     self.assertIn("MegalodonteApp.run(AppHost.class, args", readme)
