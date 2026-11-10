@@ -24,6 +24,11 @@ parar/iniciar a sessão. Ao alterar integração Gradle, valide também um consu
 com `includeBuild`: init scripts se propagam aos builds incluídos e devem conferir
 a pasta canônica do alvo antes de alterar saídas, registrar tarefas ou exigir
 plugins. Um teste isolado sem dependências locais não cobre essa configuração.
+Valide também recompilações sucessivas após editar código, com dependências
+aninhadas e chamadas reais às APIs delas; confira que os JARs mantêm suas classes.
+No live reload, preserve os caches próprios de cada build Gradle: não imponha um
+único `--project-cache-dir` à composição. Isolar os artefatos compilados não exige
+compartilhar o histórico incremental entre builds.
 
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 

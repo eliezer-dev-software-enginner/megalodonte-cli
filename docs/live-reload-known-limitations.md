@@ -17,6 +17,29 @@ change or `useLocalSources=false` workaround is required.
 
 ## Validation
 
+### Fixed: second compilation lost included library classes
+
+The subsequent Minastex report showed a successful initial build followed by
+missing `megalodonte.base.theme` classes in the second build. The
+[reported log](diagnostics/minastex-live-reload-second-build.txt) is preserved
+with the workstation path anonymized. Reproduction required no source edits:
+two prepare calls in the same session were sufficient. The core JAR ended up
+containing only its manifest, and Gradle reported compiler options changing
+between tasks from different builds despite unchanged build scripts.
+
+The CLI no longer passes a shared `--project-cache-dir`. Gradle now retains its
+normal per-build `.gradle` metadata while the application's compiled output stays
+in the temporary shadow directory. With this change, three consecutive prepare
+calls on the real Minastex succeeded and unchanged compilation tasks were
+`UP-TO-DATE`. There is no need to delete user caches or run `clean` on each edit.
+This follows Gradle's distinction between
+[project-specific cache and build output](https://docs.gradle.org/current/userguide/directory_layout.html).
+
+The integration fixture now includes a nested library, calls its API from the
+outer library, and calls that library from the app. After editing the app it
+checks that dependency hashes are unchanged and both JARs still contain their
+expected classes, in addition to checking reload in the same process.
+
 - The real Minastex composite build successfully ran `megalodonteLivePrepare`,
   compiled the application into the temporary session and produced a valid
   launcher descriptor for `minastex_pedidos.Main`. This check did not launch

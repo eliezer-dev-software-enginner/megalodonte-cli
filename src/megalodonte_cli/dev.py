@@ -130,7 +130,9 @@ class DevelopmentSession:
             raise ValueError(f'Gradle wrapper not found in {self.project}')
         init = files('megalodonte_cli').joinpath('assets/live-reload.init.gradle')
         command = ([str(wrapper)] if os.name == 'nt' else ['bash', str(wrapper)])
-        command += ['--console=plain', '--project-cache-dir', str(self.session / 'gradle-cache'),
+        # Keep Gradle's per-build caches: overriding project-cache-dir can share
+        # execution history between root tasks in nested composite builds.
+        command += ['--console=plain',
                     f'-Dmegalodonte.live.project={self.project}',
                     f'-Dmegalodonte.live.session={self.session}', '--init-script', str(init),
                     'megalodonteLivePrepare']

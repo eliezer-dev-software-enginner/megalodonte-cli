@@ -29,6 +29,8 @@ non-modular native desktop applications using Gradle's `application` plugin.
 Composite dependencies (`includeBuild`) are supported. The init script targets
 only the supervised application's canonical directory; included libraries keep
 their own build outputs and are frozen as dependencies when the app starts.
+Gradle keeps its per-build `.gradle` caches; only the application's compiled
+output and runtime generations move to the temporary world.
 Library source changes are not watched automatically: stop/start the session to
 rebuild and load them. The application itself must still be single-project. See
 [docs/live-reload-known-limitations.md](docs/live-reload-known-limitations.md)
