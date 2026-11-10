@@ -123,6 +123,8 @@ class NewApplicationTests(unittest.TestCase):
                 general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
                 self.assertIn("ErrorReporter.register", skill.read_text())
+                self.assertIn("megalodonte dev --project .", skill.read_text())
+                self.assertIn("init scripts se propagam aos builds incluídos", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("README principal em inglês", general.read_text())
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())

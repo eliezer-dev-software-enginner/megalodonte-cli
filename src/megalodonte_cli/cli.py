@@ -363,6 +363,18 @@ Requer JDK 25 e ambiente gráfico. Na raiz do repositório:
 ./gradlew run
 ```
 
+## Live reload
+
+Para telas Java nativas, execute `megalodonte dev --project .` com o CLI e as
+bibliotecas core/base atualizados (e reactivity, se usada). O build ocorre numa
+área temporária; mudanças compatíveis atualizam as janelas gerenciadas mantendo
+o estado das telas. Erros de compilação conservam a versão em execução.
+Mudanças estruturais ou de dependências pedem reinício. A opção
+`--restart-on-incompatible` permite reinício automático com perda do estado em
+memória. Use `--offline` para dependências já disponíveis no cache e Ctrl+C para
+encerrar. O cache de views JSONC não está integrado a esse mecanismo.
+Veja os [limites e exemplos do live reload](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
+
 ## Ícone no Linux
 
 {icon_help}
@@ -732,6 +744,9 @@ jobs:
 
 
 def main() -> None:
+    if len(sys.argv) >= 2 and sys.argv[1] == "dev":
+        from .dev import main as develop
+        raise SystemExit(develop(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "skills":
         skills_parser = argparse.ArgumentParser(description="Manage bundled Megalodonte skills")
         skills_parser.add_argument("skills", choices=("skills",))

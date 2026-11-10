@@ -5,6 +5,26 @@ description: Criar ou refatorar interfaces Megalodonte com composição declarat
 
 # Interface Megalodonte
 
+Para live reload de aplicativos desktop nativos, use `megalodonte dev --project .`
+quando o CLI e core/base atualizados estiverem disponíveis. Não substitua blocos
+de memória nem class loaders para simular uma troca segura: o agente aplica
+redefinições suportadas pela JVM e rerenderiza telas gerenciadas, preservando
+instâncias e State. `render()` deve gerar uma raiz nova, sem efeitos de domínio;
+assinaturas síncronas são descartadas por `SubscriptionScope` (incluindo reactivity
+atualizada). Recursos e assinaturas assíncronas precisam de ciclo de vida próprio.
+Mudanças estruturais, classes novas e dependências podem exigir reinício;
+`--restart-on-incompatible` perde o estado em memória. Documente esses limites e
+não apresente reinício de processo como hot reload com estado preservado. JSONC,
+builds multimódulo e janelas fora de Context/ScreenManager exigem integração própria.
+
+Dependências por builds compostos (`includeBuild`) são suportadas; o aplicativo
+supervisionado ainda deve ser de projeto único. As bibliotecas mantêm suas saídas
+próprias e entram como dependências congeladas; mudanças nas fontes delas exigem
+parar/iniciar a sessão. Ao alterar integração Gradle, valide também um consumidor
+com `includeBuild`: init scripts se propagam aos builds incluídos e devem conferir
+a pasta canônica do alvo antes de alterar saídas, registrar tarefas ou exigir
+plugins. Um teste isolado sem dependências locais não cobre essa configuração.
+
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.

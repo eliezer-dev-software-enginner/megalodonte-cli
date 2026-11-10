@@ -1,0 +1,53 @@
+// Injected only by `megalodonte dev`; release builds are not modified.
+import groovy.json.JsonOutput
+import org.gradle.api.plugins.JavaApplication
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.jvm.toolchain.JavaToolchainService
+
+gradle.projectsLoaded {
+    def root = gradle.rootProject
+    // Init scripts also run in buildSrc and composite builds. Only the requested
+    // application owns the shadow output and launch descriptor.
+    def target = new File(System.getProperty('megalodonte.live.project')).canonicalFile
+    if (root.projectDir.canonicalFile != target) return
+    def session = new File(System.getProperty('megalodonte.live.session')).canonicalFile
+    root.layout.buildDirectory.set(new File(session, 'build'))
+    root.afterEvaluate {
+        root.layout.buildDirectory.set(new File(session, 'build'))
+        if (root.childProjects || !root.plugins.hasPlugin('application')) {
+            throw new GradleException('Live reload requires a single-project desktop application plugin build')
+        }
+        def sources = root.extensions.getByType(SourceSetContainer).getByName('main')
+        if (sources.output.files.any { !it.canonicalFile.toPath().startsWith(session.toPath()) }) {
+            throw new GradleException('Custom output directories outside the shadow world are not supported')
+        }
+        def app = root.extensions.getByType(JavaApplication)
+        if (app.mainModule.present) {
+            throw new GradleException('Live reload currently supports classpath applications, not modular launchers')
+        }
+        root.tasks.register('megalodonteLivePrepare') {
+            dependsOn root.tasks.named('classes'), sources.runtimeClasspath
+            doLast {
+                if (sources.output.classesDirs.files.any { new File(it, 'module-info.class').exists() }) {
+                    throw new GradleException('Live reload currently supports non-modular desktop applications')
+                }
+                def launcher = root.extensions.getByType(JavaToolchainService).launcherFor(root.java.toolchain).get()
+                def run = root.tasks.named('run').get()
+                def description = [
+                    java: launcher.executablePath.asFile.absolutePath,
+                    main: app.mainClass.get(),
+                    jvmArgs: run.allJvmArgs ?: [],
+                    args: run.args ?: [],
+                    workingDir: run.workingDir.absolutePath,
+                    environment: run.environment.findAll { key, value -> System.getenv(key) != value.toString() },
+                    outputs: sources.output.files.collect { it.absolutePath },
+                    classpath: sources.runtimeClasspath.files.collect { it.absolutePath },
+                    watch: (sources.allSource.srcDirs + [root.file('build.gradle'), root.file('build.gradle.kts'),
+                            root.file('settings.gradle'), root.file('settings.gradle.kts'), root.file('gradle.properties'),
+                            root.file('gradle'), root.file('buildSrc')]).collect { it.absolutePath }
+                ]
+                new File(session, 'launch.json').text = JsonOutput.prettyPrint(JsonOutput.toJson(description))
+            }
+        }
+    }
+}
