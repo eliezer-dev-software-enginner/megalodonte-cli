@@ -12,6 +12,33 @@ pipx install --editable .
 
 For a non-editable install, use `pipx install .`. An editable install immediately exposes updates made in this checkout. A Python virtual environment with `pip install -e .` also works.
 
+### Why the `megalodonte` command exists
+
+The command name is declared by the package in `pyproject.toml`:
+
+```toml
+[project.scripts]
+megalodonte = "megalodonte_cli.cli:main"
+```
+
+When `pipx` installs the package, it creates a small executable launcher named
+`megalodonte` in its binary directory (normally `~/.local/bin`). That directory
+must be present in `PATH`; `pipx ensurepath` configures it when necessary. The
+launcher imports `megalodonte_cli.cli.main`, which interprets the next argument as
+a command. This is why `megalodonte dev`, `megalodonte skills sync`, and the normal
+project-generation options all begin with the same executable name.
+
+Check which installation your shell is using with:
+
+```sh
+command -v megalodonte
+megalodonte --help
+```
+
+An installation made inside a regular Python virtual environment exposes the
+command only while that environment is active, unless its `bin` directory is
+added to `PATH` separately.
+
 ## Develop with live reload
 
 From an existing native desktop application, use `megalodonte dev --project .`
