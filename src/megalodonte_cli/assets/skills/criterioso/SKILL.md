@@ -45,6 +45,19 @@ Se o projeto mantiver uma estimativa de progresso, revise-a em cada iteração c
 
 ## Tornar o recurso utilizável e entregar
 
+### Commits locais automáticos
+
+Depois de concluir e validar uma mudança de software autorizada, crie o commit
+local correspondente sem esperar um pedido adicional do usuário. Use uma mensagem
+que descreva o resultado final e inclua somente arquivos pertencentes à tarefa;
+preserve alterações preexistentes ou alheias. Em trabalhos com vários repositórios,
+faça um commit coerente em cada repositório alterado. Se ainda houver trabalho
+autorizado em andamento, faça commits intermediários em marcos estáveis e continue.
+
+O commit automático não autoriza `push`, publicação, release ou deploy. Execute
+essas ações somente quando já estiverem autorizadas e respeite as regras locais
+de horário, branch e aprovação.
+
 Recursos com sintaxe ou sequência não óbvia precisam de um exemplo de uso no README do projeto em uso e, se forem reutilizáveis, no modelo gerado. Na interface, use texto ou tooltip junto ao controle para explicar a ação; mostre o caminho entre clique, gatilho e resposta. Operações longas devem expor progresso, sucesso e erro também nos logs relevantes. Revise documentos antigos que contradigam o comportamento novo.
 
 Quando documentar uma correção por código, inclua o trecho completo necessário para aplicá-la, com imports e a sequência relevante de inicialização, não apenas a declaração isolada. Identifique classes que representam exemplos e preserve as configurações existentes; distinga exemplos ilustrativos daqueles que funcionam diretamente em outro modo ou plataforma.
