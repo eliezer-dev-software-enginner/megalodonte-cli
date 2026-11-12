@@ -48,6 +48,13 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("ThemeManager.setTheme(new MyTheme())", readme)
                 self.assertIn("context.javafxStage().setMinWidth(980)", readme)
                 self.assertIn("context.useView(new HomeScreen(), 1260, 780)", readme)
+                self.assertIn("docs/images/live-reload.svg", readme)
+                diagram = app / "docs/images/live-reload.svg"
+                self.assertTrue(diagram.is_file())
+                diagram_text = diagram.read_text()
+                self.assertIn("World", diagram_text)
+                self.assertIn("COMPILATION_RESULT", diagram_text)
+                self.assertIn("Scene.setRoot", diagram_text)
                 if mode == "native":
                     self.assertIn("public static final class AppHost extends MegalodonteApplication {}", readme)
                     self.assertIn("MegalodonteApp.run(AppHost.class, args", readme)
@@ -122,6 +129,9 @@ class NewApplicationTests(unittest.TestCase):
                 skill = app / "skills/megalodonte-native-ui/SKILL.md"
                 general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("ErrorReporter.register", skill.read_text())
+                self.assertIn("megalodonte dev --project .", skill.read_text())
+                self.assertIn("init scripts se propagam aos builds incluídos", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("README principal em inglês", general.read_text())
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
@@ -131,6 +141,7 @@ class NewApplicationTests(unittest.TestCase):
                 general.write_text("stale")
                 self.assertEqual(MODULE.sync_skills(app), skill)
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
+                self.assertIn("ErrorReporter.register", skill.read_text())
                 self.assertIn("name: criterioso", general.read_text())
                 self.assertIn("README principal em inglês", general.read_text())
                 self.assertEqual((app / "AGENTS.md").read_text().count("skills/criterioso/SKILL.md"), 1)

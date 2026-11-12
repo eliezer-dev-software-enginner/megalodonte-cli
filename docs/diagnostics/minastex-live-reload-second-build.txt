@@ -1,0 +1,290 @@
+user@host:<workspace>/applications/minastex-pedidos$ megalodonte dev
+[live-reload] Compiling shadow world (Gradle incremental build)...
+> Task :megalodonte-theme:processResources NO-SOURCE
+> Task :megalodonte-base:processResources NO-SOURCE
+> Task :disgust:disgust-icons:processResources
+> Task :megalodonte-components:processResources
+> Task :disgust:processResources NO-SOURCE
+> Task :processResources
+> Task :megalodonte-core:compileJava
+> Task :megalodonte-core:processResources NO-SOURCE
+> Task :megalodonte-core:classes
+> Task :megalodonte-core:jar
+> Task :megalodonte-theme:compileJava
+> Task :megalodonte-theme:classes
+> Task :megalodonte-theme:jar
+
+> Task :megalodonte-base:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :megalodonte-base:classes
+> Task :megalodonte-base:jar
+> Task :disgust:disgust-icons:compileJava
+> Task :disgust:disgust-icons:classes
+> Task :disgust:disgust-icons:jar
+
+> Task :megalodonte-components:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :megalodonte-components:classes
+> Task :megalodonte-components:jar
+
+> Task :disgust:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :disgust:classes
+> Task :disgust:jar
+> Task :compileJava
+> Task :classes
+> Task :megalodonteLivePrepare
+
+[Incubating] Problems report is available at: file:///tmp/megalodonte-live-e3ysm8se/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 3s
+17 actionable tasks: 17 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.0/userguide/configuration_cache_enabling.html
+[live-reload] Application PID 46296; world /tmp/megalodonte-live-e3ysm8se
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader in module javafx.graphics (file:/tmp/megalodonte-live-e3ysm8se/libraries-1/10/javafx-graphics-25.0.1-linux.jar)
+WARNING: Use --enable-native-access=javafx.graphics to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[live-reload] Compiling shadow world (Gradle incremental build)...
+> Task :megalodonte-base:processResources NO-SOURCE
+> Task :disgust:disgust-icons:processResources UP-TO-DATE
+> Task :megalodonte-theme:processResources NO-SOURCE
+> Task :disgust:processResources NO-SOURCE
+> Task :megalodonte-components:processResources
+> Task :processResources
+> Task :megalodonte-core:compileJava
+> Task :megalodonte-core:processResources NO-SOURCE
+> Task :megalodonte-core:classes
+> Task :megalodonte-core:jar
+
+> Task :megalodonte-theme:compileJava FAILED
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:3: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemeBorder;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:4: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemeColors;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:5: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemeInterface;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:6: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemePadding;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:7: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemeSpacing;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:8: error: package megalodonte.base.theme does not exist
+import megalodonte.base.theme.ThemeTypography;
+                             ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:24: error: cannot find symbol
+public class DefaultTheme implements ThemeInterface {
+                                     ^
+  symbol: class ThemeInterface
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:33: error: cannot find symbol
+    public ThemeColors colors() {
+           ^
+  symbol:   class ThemeColors
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:58: error: cannot find symbol
+    public ThemeTypography typography() {
+           ^
+  symbol:   class ThemeTypography
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:73: error: cannot find symbol
+    public ThemeSpacing spacing() {
+           ^
+  symbol:   class ThemeSpacing
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:89: error: cannot find symbol
+    public ThemePadding padding() {
+           ^
+  symbol:   class ThemePadding
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:104: error: cannot find symbol
+    public ThemeBorder border() {
+           ^
+  symbol:   class ThemeBorder
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:32: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:34: error: cannot find symbol
+        return new ThemeColors(
+                   ^
+  symbol:   class ThemeColors
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:57: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:59: error: cannot find symbol
+        return new ThemeTypography(
+                   ^
+  symbol:   class ThemeTypography
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:72: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:74: error: cannot find symbol
+        return new ThemeSpacing(
+                   ^
+  symbol:   class ThemeSpacing
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:88: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:90: error: cannot find symbol
+        return new ThemePadding(
+                   ^
+  symbol:   class ThemePadding
+  location: class DefaultTheme
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:103: error: method does not override or implement a method from a supertype
+    @Override
+    ^
+<workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:105: error: cannot find symbol
+        return new ThemeBorder(
+                   ^
+  symbol:   class ThemeBorder
+  location: class DefaultTheme
+22 errors
+
+> Task :megalodonte-base:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :megalodonte-base:classes
+> Task :megalodonte-base:jar
+> Task :disgust:disgust-icons:compileJava UP-TO-DATE
+> Task :disgust:disgust-icons:classes UP-TO-DATE
+> Task :disgust:disgust-icons:jar UP-TO-DATE
+
+> Task :megalodonte-components:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :megalodonte-components:classes
+> Task :megalodonte-components:jar
+
+> Task :disgust:compileJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :disgust:classes
+> Task :disgust:jar
+
+[Incubating] Problems report is available at: file:///tmp/megalodonte-live-e3ysm8se/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':megalodonte-theme:compileJava'.
+> Compilation failed; see the compiler output below.
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:33: error: cannot find symbol
+      public ThemeColors colors() {
+             ^
+    symbol:   class ThemeColors
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:58: error: cannot find symbol
+      public ThemeTypography typography() {
+             ^
+    symbol:   class ThemeTypography
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:73: error: cannot find symbol
+      public ThemeSpacing spacing() {
+             ^
+    symbol:   class ThemeSpacing
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:89: error: cannot find symbol
+      public ThemePadding padding() {
+             ^
+    symbol:   class ThemePadding
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:104: error: cannot find symbol
+      public ThemeBorder border() {
+             ^
+    symbol:   class ThemeBorder
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:34: error: cannot find symbol
+          return new ThemeColors(
+                     ^
+    symbol:   class ThemeColors
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:59: error: cannot find symbol
+          return new ThemeTypography(
+                     ^
+    symbol:   class ThemeTypography
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:74: error: cannot find symbol
+          return new ThemeSpacing(
+                     ^
+    symbol:   class ThemeSpacing
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:90: error: cannot find symbol
+          return new ThemePadding(
+                     ^
+    symbol:   class ThemePadding
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:105: error: cannot find symbol
+          return new ThemeBorder(
+                     ^
+    symbol:   class ThemeBorder
+    location: class DefaultTheme
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:32: error: method does not override or implement a method from a supertype
+      @Override
+      ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:57: error: method does not override or implement a method from a supertype
+      @Override
+      ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:72: error: method does not override or implement a method from a supertype
+      @Override
+      ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:88: error: method does not override or implement a method from a supertype
+      @Override
+      ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:103: error: method does not override or implement a method from a supertype
+      @Override
+      ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:24: error: cannot find symbol
+  public class DefaultTheme implements ThemeInterface {
+                                       ^
+    symbol: class ThemeInterface
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:3: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemeBorder;
+                               ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:4: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemeColors;
+                               ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:5: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemeInterface;
+                               ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:6: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemePadding;
+                               ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:7: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemeSpacing;
+                               ^
+  <workspace>/framework/libraries/megalodonte-theme/src/main/java/megalodonte/theme/DefaultTheme.java:8: error: package megalodonte.base.theme does not exist
+  import megalodonte.base.theme.ThemeTypography;
+                               ^
+  22 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (powered by Develocity).
+
+BUILD FAILED in 2s
+14 actionable tasks: 11 executed, 3 up-to-date
+[live-reload] Build failed; running application was not changed.

@@ -12,6 +12,109 @@ pipx install --editable .
 
 For a non-editable install, use `pipx install .`. An editable install immediately exposes updates made in this checkout. A Python virtual environment with `pip install -e .` also works.
 
+### Why the `megalodonte` command exists
+
+The command name is declared by the package in `pyproject.toml`:
+
+```toml
+[project.scripts]
+megalodonte = "megalodonte_cli.cli:main"
+```
+
+When `pipx` installs the package, it creates a small executable launcher named
+`megalodonte` in its binary directory (normally `~/.local/bin`). That directory
+must be present in `PATH`; `pipx ensurepath` configures it when necessary. The
+launcher imports `megalodonte_cli.cli.main`, which interprets the next argument as
+a command. This is why `megalodonte dev`, `megalodonte skills sync`, and the normal
+project-generation options all begin with the same executable name.
+
+Check which installation your shell is using with:
+
+```sh
+command -v megalodonte
+megalodonte --help
+```
+
+An installation made inside a regular Python virtual environment exposes the
+command only while that environment is active, unless its `bin` directory is
+added to `PATH` separately.
+
+## Develop with live reload
+
+From an existing native desktop application, use `megalodonte dev --project .`
+(`--offline` uses cached dependencies). The CLI watches source and resource
+changes, debounces saves, compiles incrementally with Gradle in a temporary world,
+and sends complete successful generations to the running JVM. The first build
+records a JSON manifest of project files, Java tokens/symbols and hashes; later
+builds record only deltas. File contents use a local content-addressed store, so
+binary resources are not inflated into JSON. Compiler responses contain status
+and output artifact hashes rather than retransmitting the entire application.
+The normal project
+`build/` and running dependency JARs are not overwritten. All visible windows
+registered through `Context` or `ScreenManager` rerender with the same screen
+instances. Logs report applied class/window counts and failures.
+
+Install matching updated `megalodonte-core`, `megalodonte-base`, and, if used,
+`megalodonte-reactivity` artifacts first. This currently supports single-project,
+non-modular native desktop applications using Gradle's `application` plugin.
+
+Composite dependencies (`includeBuild`) are supported. The init script targets
+only the supervised application's canonical directory; included libraries keep
+their own build outputs and are frozen as dependencies when the app starts.
+Gradle keeps its per-build `.gradle` caches; only the application's compiled
+output and runtime generations move to the temporary world.
+Library source changes are not watched automatically: stop/start the session to
+rebuild and load them. The application itself must still be single-project. See
+[docs/live-reload-known-limitations.md](docs/live-reload-known-limitations.md)
+for the composite-build fix, validation and remaining limits.
+
+Failed compilation keeps the application running. Structural changes and changes
+to dependencies require a restart; opt in with `--restart-on-incompatible` to
+restart automatically, losing in-memory state. Ctrl+C ends the development
+session. `--debounce 0.8` changes the quiet interval in seconds.
+
+This does not copy raw memory, reinitialize existing objects, migrate arbitrary
+state, or update cached JSONC views. For the full supported-change matrix and
+rollback limits, see the [base live reload guide](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
+Environment-file values are never placed in protocol JSON; changing `.env`
+requires restarting the development session. Java token comparison detects the
+smallest source difference, while javac still compiles class/source units and
+affected dependents. Tokenization cannot bypass JVM class-shape restrictions.
+
+![Incremental live reload architecture](src/megalodonte_cli/assets/live-reload-architecture-en.svg)
+
+Validate the CLI with `PYTHONPATH=src python -m unittest discover -s tests`.
+
+### Experimental persistent native windows
+
+This is a separate experiment, not the project-to-compiler messaging described
+above. It should not be inferred as automatic serialization of an existing app.
+
+For Java workers explicitly using `NativeWorker.Application` from the updated
+base library:
+
+```sh
+megalodonte dev --native-host --worker-main your.package.WorkerMain
+```
+
+This keeps a permanent JavaFX host and replaces worker JVMs after successful
+builds, including class additions/removals and structural changes. It does not
+adapt ordinary application Main classes or existing component trees automatically.
+JSON is internal messaging; application code remains Java. The current prototype
+supports text, buttons, inputs, rows and columns; stable input IDs retain edited
+text, while arbitrary business state requires explicit migration.
+
+Host runtime changes require a manual stop/start; this mode never automatically
+restarts the host. Rejected candidates keep the previous worker and windows.
+Generation files remain until the session ends. Closing any window ends the
+prototype host session. See the [native messaging design and API](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/NATIVE_MESSAGING.md).
+
+Explicit integration check (display and published artifacts required):
+`PYTHONPATH=src python tests/integration_native_host.py`.
+The opt-in `PYTHONPATH=src python tests/integration_live_reload.py` additionally
+requires JDK 25, local artifacts, Gradle dependencies and a display, and exercises
+a temporary generated consumer without touching user projects.
+
 ## Create an application
 
 From the desired parent directory:
@@ -74,19 +177,19 @@ cd my-app
 ./gradlew run
 ```
 
-## Skills para agentes
+## Agent skills
 
-Todo projeto gerado, seja desktop, Android ou Roku, contém `skills/megalodonte-native-ui/SKILL.md` para interface e `skills/criterioso/SKILL.md` para investigação, implementação e validação. O `AGENTS.md` indica quando ler cada uma. As cópias são versionadas com o projeto; o CLI empacota as versões canônicas, então projetos novos recebem as versões do CLI instalado.
+Every generated desktop, Android or Roku project includes `skills/megalodonte-native-ui/SKILL.md` for interfaces and `skills/criterioso/SKILL.md` for investigation, implementation and validation. `AGENTS.md` explains when to read each skill. Copies are versioned with the project; the CLI bundles the canonical versions, so new projects receive the installed CLI's skills.
 
-Para fazer as skills aparecerem no menu `$` do Codex, na raiz do projeto execute:
+To make the skills available in Codex's `$` menu, run from the project root:
 
 ```sh
 megalodonte skills install --project .
 ```
 
-O comando cria vínculos em `~/.codex/skills` (ou `$CODEX_HOME/skills`) para as duas skills do projeto. Se já houver uma instalação com o mesmo nome apontando a outro lugar, o CLI informa o conflito e não a substitui. Depois de atualizar o CLI, atualize um projeto existente com `megalodonte skills sync --project .`; os vínculos acompanham os arquivos atualizados. A sincronização substitui as cópias no projeto, então mantenha personalizações específicas em outra skill. Reinicie a conversa se o menu `$` não atualizar imediatamente.
+This creates links in `~/.codex/skills` (or `$CODEX_HOME/skills`) to both project skills. If a name already points elsewhere, the CLI reports the conflict without replacing it. After updating the CLI, refresh an existing project with `megalodonte skills sync --project .`; the links follow the updated files. Synchronization replaces the project copies, so keep project-specific customizations separately. Start a new conversation if the `$` menu does not refresh immediately.
 
-Para invocá-las explicitamente, digite `$criterioso` em tarefas de desenvolvimento em geral ou `$megalodonte-native-ui` ao trabalhar na interface. As instruções em `AGENTS.md` também as tornam aplicáveis sem invocação explícita.
+Invoke `$criterioso` for general development or `$megalodonte-native-ui` for UI work. Instructions in `AGENTS.md` also make the appropriate skills applicable without explicit invocation.
 
 Gradle needs a Java 25 toolchain. The wrapper may download Gradle, and the build needs its Megalodonte dependencies from Maven local, Maven Central, or the local workspace builds described below.
 

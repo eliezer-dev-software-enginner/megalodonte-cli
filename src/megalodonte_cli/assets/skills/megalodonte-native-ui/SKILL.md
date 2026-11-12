@@ -5,6 +5,57 @@ description: Criar ou refatorar interfaces Megalodonte com composição declarat
 
 # Interface Megalodonte
 
+Para live reload de aplicativos desktop nativos, use `megalodonte dev --project .`
+quando o CLI e core/base atualizados estiverem disponíveis. Não substitua blocos
+de memória nem class loaders para simular uma troca segura: o agente aplica
+redefinições suportadas pela JVM e rerenderiza telas gerenciadas, preservando
+instâncias e State. `render()` deve gerar uma raiz nova, sem efeitos de domínio;
+assinaturas síncronas são descartadas por `SubscriptionScope` (incluindo reactivity
+atualizada). Recursos e assinaturas assíncronas precisam de ciclo de vida próprio.
+Mudanças estruturais, classes novas e dependências podem exigir reinício;
+`--restart-on-incompatible` perde o estado em memória. Documente esses limites e
+não apresente reinício de processo como hot reload com estado preservado. JSONC,
+builds multimódulo e janelas fora de Context/ScreenManager exigem integração própria.
+
+A mensageria do mundo de compilação representa qualquer projeto por um manifesto
+JSON inicial e deltas posteriores de arquivos, tokens e símbolos. Ela não deve
+conhecer telas, entidades ou regras de uma aplicação consumidora. Conteúdos ficam
+num armazenamento local por hash; recursos binários não devem virar Base64 no
+JSON. A resposta contém status, diagnósticos e metadados dos artefatos compilados,
+em vez de devolver a aplicação inteira. `.env` participa apenas com caminho,
+tamanho e hash, nunca com valores, e sua alteração exige reinício. Tokenização
+serve para detectar e classificar mudanças; não prometa compilar ou substituir um
+campo Java isoladamente, pois javac e a JVM operam com unidades/classes e suas
+dependências. Documente separadamente compilação, ativação e preservação de janela.
+
+Dependências por builds compostos (`includeBuild`) são suportadas; o aplicativo
+supervisionado ainda deve ser de projeto único. As bibliotecas mantêm suas saídas
+próprias e entram como dependências congeladas; mudanças nas fontes delas exigem
+parar/iniciar a sessão. Ao alterar integração Gradle, valide também um consumidor
+com `includeBuild`: init scripts se propagam aos builds incluídos e devem conferir
+a pasta canônica do alvo antes de alterar saídas, registrar tarefas ou exigir
+plugins. Um teste isolado sem dependências locais não cobre essa configuração.
+Valide também recompilações sucessivas após editar código, com dependências
+aninhadas e chamadas reais às APIs delas; confira que os JARs mantêm suas classes.
+No live reload, preserve os caches próprios de cada build Gradle: não imponha um
+único `--project-cache-dir` à composição. Isolar os artefatos compilados não exige
+compartilhar o histórico incremental entre builds.
+
+Preservar janelas no live reload significa manter os mesmos Stage/Scene, não
+fechar e reabrir janelas semelhantes. Janelas secundárias gerenciadas precisam
+ser registradas explicitamente no ciclo de montagem e removidas no fechamento;
+não dependa apenas de `Window.getWindows()`. Valide a atualização com a janela
+secundária já criada e confira identidade de Stage/Scene, estado e montagem.
+O protótipo `NativeWindowHost` do base mantém
+janelas em um hospedeiro e troca workers Java por mensagens JSON internas; isso
+continua sendo modo nativo, não construção de UI JSONC. Ainda exige API explícita,
+tem cobertura limitada de controles e usa a opção experimental
+`megalodonte dev --native-host --worker-main pacote.WorkerMain`. Não adapta o Main
+normal ou telas existentes automaticamente. Não afirme migração automática de estado de negócio. Consulte
+`docs/NATIVE_MESSAGING.md` do base para status, limites e testes de identidade.
+Esse protótipo de UI/worker é separado do protocolo projeto-compilador e não deve
+ser apresentado como a implementação da mensageria incremental da aplicação toda.
+
 Esta skill é compartilhada entre projetos desktop, Android e Roku. A composição declarativa, o tema e a separação de lógica orientam todas as plataformas. As regras abaixo que citam JavaFX, `megalodonte-components` ou `disgust-components` são específicas de desktop. No Android, adapte estado e composição às APIs da bridge; na Roku, use `megalodonte-roku` (inclusive seu `Counter` de runtime), sem presumir que `State` ou componentes desktop estejam disponíveis. Consulte o código da plataforma antes de aplicar uma API citada abaixo.
 
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
@@ -27,6 +78,8 @@ Declare `State`, `ListState` e estados derivados como campos no topo da classe d
 Não chame `getJavaFxNode()` em código de aplicativo, inclusive para estilo, foco, seleção, eventos, tamanho ou inserção de filhos. Não instancie `javafx.scene.control` nem `javafx.scene.layout` em telas. Se a API de um componente não expõe uma operação necessária, avalie a possibilidade de expressá-la com `State` ou `Props`; se faltar uma capacidade reutilizável, implemente-a na biblioteca e consuma a nova API. JavaFX permanece dentro das bibliotecas como detalhe de implementação.
 
 Para abrir links externos no navegador, use `megalodonte.base.Redirect.to(url)` ou `Redirect.to(url, onError)`. Não use `Desktop.getDesktop().browse(...)`, `URI.create(...)` nem crie threads na tela para essa finalidade; `Redirect` já encapsula a abertura assíncrona. O callback de erro é executado fora da thread de UI: se ele apresentar um alerta ou atualizar estado visual, encaminhe essa parte por `UI.runOnUi(...)`.
+
+Em aplicativos desktop, registre `ErrorReporter.register(...)` no início do bootstrap, antes de iniciar tarefas com `Async.Run`, `Scope` ou navegação que possa falhar. O callback central recebe o `Throwable` e pertence ao aplicativo: ele pode registrar logs, apresentar um alerta pela abstração visual do projeto ou notificar um serviço externo. Como pode ser chamado fora da thread JavaFX, toda apresentação visual deve passar por `UI.runOnUi(...)`. Encaminhe exceções capturadas que devam seguir a mesma política com `ErrorReporter.handle(error)`; não espalhe tratamentos divergentes quando a falha pertence à política global. O framework também grava as falhas reportadas em `~/.megalodonte/errors.log`.
 
 Em aplicativos desktop Linux com ícone próprio, configure `MegalodonteApp.appIcon("/icon.png")` antes de iniciar e use uma subclasse exclusiva de `MegalodonteApplication` em `MegalodonteApp.run(AppHost.class, args, ...)`. O `WM_CLASS` dessa classe permite ao dock associar a janela ao `.desktop` correto; o framework deve usar um novo caminho de ícone quando o conteúdo mudar para evitar imagem antiga em cache. Confirme o resultado no aplicativo efetivamente iniciado, não apenas no recurso do projeto.
 
