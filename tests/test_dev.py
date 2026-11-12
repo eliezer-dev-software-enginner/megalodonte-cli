@@ -8,6 +8,11 @@ from megalodonte_cli import dev
 
 
 class LiveReloadTests(unittest.TestCase):
+    def test_regular_dev_restarts_incompatible_generations_by_default(self):
+        self.assertTrue(dev.restart_policy(False, None))
+        self.assertFalse(dev.restart_policy(False, False))
+        self.assertFalse(dev.restart_policy(True, None))
+
     def test_watcher_debounces_edits_and_builds_latest_content(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -67,7 +72,7 @@ class LiveReloadTests(unittest.TestCase):
                 self.assertFalse(session.build({'changed': 'old'}))
                 apply.assert_not_called()
 
-    def test_dependency_change_requires_explicit_restart(self):
+    def test_incompatible_change_follows_restart_policy(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             session = dev.DevelopmentSession(root, root, True, False)
