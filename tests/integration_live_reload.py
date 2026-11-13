@@ -45,7 +45,7 @@ def main():
             'applicationDefaultJvmArgs = listOf(' + json.dumps('-Duser.home=' + str(root / 'app-home')) + ', '))
         session_dir = root / 'session'
         session_dir.mkdir()
-        session = DevelopmentSession(app, session_dir, True, False)
+        session = DevelopmentSession(app, session_dir, True, True)
         source = app / 'src/main/java/reload_demo/HomeScreen.java'
         original = source.read_text()
         try:
@@ -77,11 +77,33 @@ def main():
             for jar, entry in zip(libraries, ['example/LocalLibrary.class', 'nested/Value.class']):
                 with zipfile.ZipFile(jar) as contents:
                     assert entry in contents.namelist(), 'A successful build must not produce empty library JARs'
+            # The reported production case: a new import, a new static component factory,
+            # and its use alter class structure. A regular dev session must adopt it by
+            # restarting the child JVM instead of logging detection while keeping old UI.
+            structural = original.replace(
+                'import megalodonte.props.TextProps;',
+                'import megalodonte.props.TextProps;\nimport java.util.Objects;').replace(
+                'public final class HomeScreen implements ScreenComponent {',
+                'public final class HomeScreen implements ScreenComponent {\n'
+                '    private static Component importedComponent() {\n'
+                '        return Objects.requireNonNull(new Text("Imported component", new TextProps()));\n'
+                '    }').replace(
+                'new Text("Live reload integration", new TextProps().fontSize(28)))',
+                'new Text("Live reload integration", new TextProps().fontSize(28)), importedComponent())')
+            source.write_text(structural)
+            assert session.build(fingerprint(session.watch)), 'Structural component change must be adopted'
+            restarted_pid = session.process.pid
+            assert restarted_pid != pid, 'Structural changes require a fresh application JVM'
+            assert session.process.poll() is None
+            compiled = json.loads((session_dir / 'world/protocol/latest-response.json').read_text())
+            assert compiled['status'] == 'APPLIED'
+            pid = restarted_pid
             source.write_text('invalid java code')
             assert not session.build(fingerprint(session.watch))
             assert session.process.poll() is None
             source.write_text(original)
             assert session.build(fingerprint(session.watch))
+            pid = session.process.pid
             resource = app / 'src/main/resources/live-reload.txt'
             resource.write_text('resource generation')
             assert session.build(fingerprint(session.watch))
@@ -94,12 +116,12 @@ def main():
             assert 'never-copy-this' not in request_text
             assert json.loads(request_text)['requiresRestart']
             assert session.process.pid == pid and session.process.poll() is None
-            # Adding a dependency changes the runtime. No automatic restart.
+            # Adding a dependency changes the runtime and follows the same automatic fallback.
             build.write_text(build.read_text().replace('dependencies {', 'dependencies {\n    runtimeOnly("org.slf4j:slf4j-simple:2.0.17")'))
-            assert not session.build(fingerprint(session.watch))
-            assert session.process.pid == pid
+            assert session.build(fingerprint(session.watch))
+            assert session.process.pid != pid
             assert session.process.poll() is None
-            print('PASS: project manifest/deltas, resources, private environment restart, nested incremental builds, reload and failure recovery')
+            print('PASS: compatible reload, imported static component restart, dependencies, resources, private environment and failure recovery')
         finally:
             session.stop()
 

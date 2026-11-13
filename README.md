@@ -68,10 +68,14 @@ rebuild and load them. The application itself must still be single-project. See
 [docs/live-reload-known-limitations.md](docs/live-reload-known-limitations.md)
 for the composite-build fix, validation and remaining limits.
 
-Failed compilation keeps the application running. Structural changes and changes
-to dependencies require a restart; opt in with `--restart-on-incompatible` to
-restart automatically, losing in-memory state. Ctrl+C ends the development
-session. `--debounce 0.8` changes the quiet interval in seconds.
+Failed compilation keeps the application running. Compatible method-body edits
+retain the JVM, screen instances and managed windows. Structural changes such as
+new component factories, imports that introduce new classes, fields, methods or
+signatures, and dependency changes automatically restart the application child so
+the successful generation becomes visible. That fallback recreates windows and
+loses in-memory state; use `--no-restart-on-incompatible` only when keeping the old
+generation active is preferable. Ctrl+C ends the development session.
+`--debounce 0.8` changes the quiet interval in seconds.
 
 This does not copy raw memory, reinitialize existing objects, migrate arbitrary
 state, or update cached JSONC views. For the full supported-change matrix and

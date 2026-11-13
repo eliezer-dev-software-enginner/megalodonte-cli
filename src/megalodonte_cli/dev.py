@@ -112,6 +112,11 @@ def runtime_signature(description: dict) -> tuple:
                         if key not in {'outputs', 'watch'}}, sort_keys=True), fingerprint(dependencies(description)))
 
 
+def restart_policy(native_host: bool, configured: bool | None) -> bool:
+    """Regular sessions adopt incompatible generations; persistent hosts never restart by default."""
+    return not native_host if configured is None else configured
+
+
 class DevelopmentSession:
     def __init__(self, project: Path, session: Path, offline: bool, restart: bool):
         self.project, self.session = project.resolve(), session
@@ -228,10 +233,11 @@ class DevelopmentSession:
                 raise RuntimeError('Application exited before acknowledging reload')
         if status == 'RESTART_REQUIRED':
             if self.restart:
-                print('[live-reload] Restarting as requested; in-memory state will reset.', flush=True)
+                print('[live-reload] Structural or dependency change requires a fresh JVM. '
+                      'Restarting automatically; windows are recreated and in-memory state resets.', flush=True)
                 self.start(description, generation)
                 return True
-            print('[live-reload] Old version remains active. Stop/start dev, or opt in with --restart-on-incompatible.', flush=True)
+            print('[live-reload] Old version remains active because automatic restart was disabled.', flush=True)
         if status == 'FATAL':
             raise RuntimeError('Agent could not roll back the reload; stopping this development session')
         return status == 'APPLIED'
@@ -286,8 +292,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--project', type=Path, default=Path.cwd())
     parser.add_argument('--offline', action='store_true')
-    parser.add_argument('--restart-on-incompatible', action='store_true',
-                        help='Restart on structural/dependency changes, losing in-memory state')
+    restart = parser.add_mutually_exclusive_group()
+    restart.add_argument('--restart-on-incompatible', dest='restart_on_incompatible',
+                         action='store_true', default=None,
+                         help='Restart on structural/dependency changes (the default for regular dev sessions)')
+    restart.add_argument('--no-restart-on-incompatible', dest='restart_on_incompatible',
+                         action='store_false',
+                         help='Keep the old application active when a structural/dependency change needs a restart')
     parser.add_argument('--native-host', action='store_true',
                         help='Experimental persistent-window host; requires the NativeWorker Java API')
     parser.add_argument('--worker-main', help='Java entry class implementing the experimental NativeWorker protocol')
@@ -297,15 +308,16 @@ def main(argv: list[str] | None = None) -> int:
         parser.error('--debounce must be between .1 and 30 seconds')
     if args.native_host != bool(args.worker_main):
         parser.error('--native-host and --worker-main must be used together')
-    if args.native_host and args.restart_on_incompatible:
+    if args.native_host and args.restart_on_incompatible is True:
         parser.error('--native-host never restarts the window host; omit --restart-on-incompatible')
+    automatic_restart = restart_policy(args.native_host, args.restart_on_incompatible)
     try:
         with tempfile.TemporaryDirectory(prefix='megalodonte-live-') as directory:
             if args.native_host:
                 from .native_dev import NativeDevelopmentSession
                 session = NativeDevelopmentSession(args.project, Path(directory), args.offline, args.worker_main)
             else:
-                session = DevelopmentSession(args.project, Path(directory), args.offline, args.restart_on_incompatible)
+                session = DevelopmentSession(args.project, Path(directory), args.offline, automatic_restart)
             try:
                 return session.run(args.debounce)
             finally:

@@ -12,8 +12,10 @@ redefinições suportadas pela JVM e rerenderiza telas gerenciadas, preservando
 instâncias e State. `render()` deve gerar uma raiz nova, sem efeitos de domínio;
 assinaturas síncronas são descartadas por `SubscriptionScope` (incluindo reactivity
 atualizada). Recursos e assinaturas assíncronas precisam de ciclo de vida próprio.
-Mudanças estruturais, classes novas e dependências podem exigir reinício;
-`--restart-on-incompatible` perde o estado em memória. Documente esses limites e
+Mudanças estruturais (novos métodos `static`, campos, classes, assinaturas ou
+dependências) fazem o comando padrão reiniciar automaticamente o processo cliente;
+esse fallback recria as janelas e perde o estado em memória. A opção
+`--no-restart-on-incompatible` mantém a geração anterior ativa. Documente esses limites e
 não apresente reinício de processo como hot reload com estado preservado. JSONC,
 builds multimódulo e janelas fora de Context/ScreenManager exigem integração própria.
 

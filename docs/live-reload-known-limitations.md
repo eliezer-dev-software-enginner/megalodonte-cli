@@ -65,8 +65,11 @@ directories; the application output and active runtime mirror are isolated.
 
 Library source trees are not watched automatically. Stop/start the session after
 editing them to rebuild and freeze the new dependency JARs. Changes to resolved
-dependency contents or launch configuration require a restart; adding JARs to an
-already running class loader is not supported. In-memory state is lost on restart.
+dependency contents, launch configuration or Java class structure automatically
+restart the application child in a regular `megalodonte dev` session; adding JARs
+to an already running class loader is not supported. In-memory state is lost and
+windows are recreated on that fallback. `--no-restart-on-incompatible` keeps the
+previous generation active instead.
 
 Structural Java edits, cached JSONC views, custom launch hooks and unmanaged
 windows retain the limits described in the
