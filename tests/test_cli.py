@@ -39,6 +39,10 @@ class NewApplicationTests(unittest.TestCase):
                               (app / "packaging.toml").read_text())
                 self.assertEqual((app / "src/main/resources/icon.png").read_bytes()[:8],
                                  b"\x89PNG\r\n\x1a\n")
+                self.assertEqual((app / "src/main/resources/icon.png").read_bytes(),
+                                 (MODULE.ASSETS / "starter-icon.png").read_bytes())
+                self.assertEqual((app / "docs/images/megalodonte-logo.png").read_bytes(),
+                                 (MODULE.ASSETS / "starter-icon.png").read_bytes())
                 self.assertTrue((app / "scripts/package.py").is_file())
                 readme = (app / "README.md").read_text()
                 self.assertIn("## Executar", readme)
@@ -49,6 +53,9 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("context.javafxStage().setMinWidth(980)", readme)
                 self.assertIn("context.useView(new HomeScreen(), 1260, 780)", readme)
                 self.assertIn("docs/images/live-reload.svg", readme)
+                self.assertIn("docs/images/megalodonte-logo.png", readme)
+                self.assertIn("JAVAFX_MODULES_HOME", readme)
+                self.assertIn("module path automaticamente", readme)
                 diagram = app / "docs/images/live-reload.svg"
                 self.assertTrue(diagram.is_file())
                 diagram_text = diagram.read_text()
@@ -84,6 +91,10 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("MEGALODONTE_ANDROID_HOME: framework/megalodonte-android", workflow)
                 self.assertTrue((app / ".git").is_dir())
                 self.assertEqual((app / "app/src/main/assets/views/home.view.jsonc").exists(), mode == "jsonc")
+                self.assertEqual((app / "app/src/main/res/drawable/ic_megalodonte.png").read_bytes(),
+                                 (MODULE.ASSETS / "starter-icon.png").read_bytes())
+                self.assertFalse((app / "app/src/main/res/drawable/ic_megalodonte.xml").exists())
+                self.assertIn("docs/images/megalodonte-logo.png", (app / "README.md").read_text())
                 if mode == "jsonc":
                     view = (app / "app/src/main/assets/views/home.view.jsonc").read_text()
                     activity = (app / "app/src/main/java/megalodonte/app/android_jsonc/MainActivity.java").read_text()
@@ -118,6 +129,9 @@ class NewApplicationTests(unittest.TestCase):
             self.assertIn('new Counter("Cliques", 0)', screen)
             self.assertIn("packageRoku", (app / "build.gradle.kts").read_text())
             self.assertIn("megalodonte-roku", (app / ".github/workflows/roku.yml").read_text())
+            self.assertEqual((app / "src/main/resources/icon.png").read_bytes(),
+                             (MODULE.ASSETS / "starter-icon.png").read_bytes())
+            self.assertIn("docs/images/megalodonte-logo.png", (app / "README.md").read_text())
             with self.assertRaises(ValueError):
                 MODULE.create("roku-jsonc", "jsonc", "Unsupported", root, platform="roku")
 
@@ -137,6 +151,8 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("skills/criterioso/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("megalodonte skills install --project .", (app / "README.md").read_text())
+                if platform == "desktop":
+                    self.assertIn("recuperam posição, tamanho, modo e intenção de foco", (app / "README.md").read_text())
                 skill.write_text("stale")
                 general.write_text("stale")
                 self.assertEqual(MODULE.sync_skills(app), skill)

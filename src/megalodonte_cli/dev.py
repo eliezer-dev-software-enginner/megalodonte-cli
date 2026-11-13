@@ -9,11 +9,13 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import zipfile
 
 from .world import CompilationWorld
+from .console import live, status_level
 
 
 def fingerprint(paths: list[Path]) -> dict[str, str]:
@@ -140,10 +142,10 @@ class DevelopmentSession:
         self.pending_world_request = request
         delta = request['delta']
         changed = len(delta['added']) + len(delta['changed']) + len(delta['deleted'])
-        print(f"[live-reload] Virtual world {request['type'].lower()}: {changed} changed inputs.", flush=True)
+        live(f"Virtual world {request['type'].lower()}: {changed} changed inputs.")
         if request['requiresRestart'] and self.process is not None:
             self.world.response(request, 'RESTART_REQUIRED', detail='Environment file changed')
-            print('[live-reload] Environment changed; restart is required. Secret contents were not copied.', flush=True)
+            live('Environment changed; restart is required. Secret contents were not copied.', 'warning')
             return None
         wrapper = self.project / ('gradlew.bat' if os.name == 'nt' else 'gradlew')
         if not wrapper.is_file():
@@ -158,11 +160,11 @@ class DevelopmentSession:
                     'megalodonteLivePrepare']
         if self.offline:
             command.append('--offline')
-        print('[live-reload] Compiling shadow world (Gradle incremental build)...', flush=True)
+        live('Compiling shadow world (Gradle incremental build)...')
         result = subprocess.run(command, cwd=self.project)
         if result.returncode:
             self.world.response(request, 'FAILED', detail='Gradle compilation failed')
-            print('[live-reload] Build failed; running application was not changed.', flush=True)
+            live('Build failed; running application was not changed.', 'error')
             return None
         description = json.loads((self.session / 'launch.json').read_text(encoding='utf-8'))
         return description
@@ -170,6 +172,7 @@ class DevelopmentSession:
     def start(self, description: dict, generation: Path) -> None:
         # Validate launch support before stopping an existing process.
         command = launch_command(description, self.session)
+        self.snapshot_windows()
         self.stop()
         active = self.session / 'active'
         if active.exists():
@@ -196,7 +199,30 @@ class DevelopmentSession:
                                         env={**os.environ, **description.get('environment', {})})
         self.description = description
         self.signature = runtime_signature(description)
-        print(f'[live-reload] Application PID {self.process.pid}; world {self.session}', flush=True)
+        live(f'Application PID {self.process.pid}; world {self.session}', 'success')
+
+    def snapshot_windows(self) -> bool:
+        """Ask the running JavaFX child to persist window state before replacement."""
+        if self.process is None or self.process.poll() is not None:
+            return False
+        request_id = f'snapshot:{time.time_ns()}'
+        marker = self.session / 'request.tmp'
+        marker.write_text(request_id, encoding='utf-8')
+        marker.replace(self.session / 'request')
+        deadline = time.monotonic() + 5
+        while self.process.poll() is None and time.monotonic() < deadline:
+            response = self.session / 'response'
+            if response.exists():
+                lines = response.read_text(encoding='utf-8').splitlines()
+                if len(lines) >= 2 and lines[0] == request_id:
+                    if lines[1] == 'SNAPSHOT':
+                        live('Saved ' + ' '.join(lines[2:]) + ' for restart.', 'success')
+                        return True
+                    live('Window state was not saved: ' + ' '.join(lines[1:]), 'error')
+                    return False
+            time.sleep(.05)
+        live('Window state snapshot timed out; restarting without restored placement.', 'warning')
+        return False
 
     def stop(self) -> None:
         if self.process is not None and self.process.poll() is None:
@@ -210,7 +236,7 @@ class DevelopmentSession:
     def reload(self, description: dict, generation: Path) -> bool:
         if self.signature != runtime_signature(description):
             status = 'RESTART_REQUIRED'
-            print('[live-reload] Dependencies or launch configuration changed.', flush=True)
+            live('Dependencies or launch configuration changed.', 'warning')
         else:
             marker = self.session / 'request.tmp'
             marker.write_text(str(self.generation), encoding='utf-8')
@@ -223,21 +249,21 @@ class DevelopmentSession:
                     lines = response.read_text(encoding='utf-8').splitlines()
                     if len(lines) >= 2 and lines[0] == str(self.generation):
                         status = lines[1]
-                        print('[live-reload] ' + ' '.join(lines[1:]), flush=True)
+                        live(' '.join(lines[1:]), status_level(lines[1]))
                         break
                 if not warned and time.monotonic() - started > 10:
-                    print('[live-reload] Waiting for the application UI thread. Ctrl+C stops the session.', flush=True)
+                    live('Waiting for the application UI thread. Ctrl+C stops the session.', 'warning')
                     warned = True
                 time.sleep(.1)
             else:
                 raise RuntimeError('Application exited before acknowledging reload')
         if status == 'RESTART_REQUIRED':
             if self.restart:
-                print('[live-reload] Structural or dependency change requires a fresh JVM. '
-                      'Restarting automatically; windows are recreated and in-memory state resets.', flush=True)
+                live('Structural or dependency change requires a fresh JVM. '
+                     'Restarting automatically; window placement will be restored and in-memory state resets.', 'warning')
                 self.start(description, generation)
                 return True
-            print('[live-reload] Old version remains active because automatic restart was disabled.', flush=True)
+            live('Old version remains active because automatic restart was disabled.', 'warning')
         if status == 'FATAL':
             raise RuntimeError('Agent could not roll back the reload; stopping this development session')
         return status == 'APPLIED'
@@ -247,7 +273,7 @@ class DevelopmentSession:
         if description is None:
             return False
         if self.watcher.scan(self.watch) != expected:
-            print('[live-reload] Source changed during compilation; discarding stale result.', flush=True)
+            live('Source changed during compilation; discarding stale result.', 'warning')
             return False
         self.watch = list(dict.fromkeys([*self.watch, *(Path(path) for path in description['watch'])]))
         self.generation += 1
@@ -323,8 +349,9 @@ def main(argv: list[str] | None = None) -> int:
             finally:
                 session.stop()
     except KeyboardInterrupt:
-        print('\n[live-reload] Session stopped.', flush=True)
+        print()
+        live('Session stopped.')
         return 0
     except (OSError, ValueError, RuntimeError) as error:
-        print(f'[live-reload] {error}', flush=True)
+        live(str(error), 'error', sys.stderr)
         return 1

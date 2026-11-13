@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
 # Megalodonte CLI
 
 Create desktop, Android, and Roku applications with Megalodonte. Desktop and Android support declarative JSONC views (`jsonc`) and Java screens (`native`). Roku initially supports Java-authored native screens: Java runs at build time and produces SceneGraph XML and BrightScript for the TV. The CLI generates a Gradle build, wrapper, starter screen, GitHub Actions workflow, icon, and local Git repository. Desktop projects also receive AppImage, DEB and MSI packaging.
@@ -243,6 +247,27 @@ cd my-app
 ./gradlew test
 ./gradlew run
 ```
+
+## FAQ
+
+### Do I need to install the JavaFX modules? When?
+
+Not for normal development or execution. Generated desktop projects apply the
+OpenJFX Gradle plugin, which resolves JavaFX 25.0.1 and the native artifacts for
+the current operating system from the configured repositories. `./gradlew run`
+uses that runtime classpath directly. `megalodonte dev` reads the same Gradle
+classpath, moves the platform-specific JavaFX JARs to the JVM module path, and
+adds `ALL-MODULE-PATH` automatically. The first build therefore needs repository
+access, unless the artifacts are already in the Gradle cache; `--offline` only
+works with cached dependencies.
+
+An external JavaFX SDK is required when **building a native runtime or
+installer** with `megalodonte-packaging`, because `jlink` and `jpackage` need the
+SDK's modular JARs and native files. Configure it with `javafx.sdk` in
+`packaging.toml` or with `JAVAFX_MODULES_HOME`. The variable is
+`JAVAFX_MODULES_HOME`, not `JAVAFX_MODULES`. It is not needed on a machine that
+only runs an already packaged application: the generated runtime contains the
+required JavaFX modules.
 
 ## Agent skills
 

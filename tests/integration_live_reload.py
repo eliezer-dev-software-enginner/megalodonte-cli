@@ -95,6 +95,10 @@ def main():
             restarted_pid = session.process.pid
             assert restarted_pid != pid, 'Structural changes require a fresh application JVM'
             assert session.process.poll() is None
+            window_state = json.loads((session_dir / 'window-state.json').read_text())
+            assert window_state['version'] == 1
+            assert any(window['id'] == 'primary' and window['width'] > 0 and window['height'] > 0
+                       for window in window_state['windows'])
             compiled = json.loads((session_dir / 'world/protocol/latest-response.json').read_text())
             assert compiled['status'] == 'APPLIED'
             pid = restarted_pid

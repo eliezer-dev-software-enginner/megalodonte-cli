@@ -29,6 +29,12 @@ Separe mecanismos genéricos de regras do produto. Um editor ou gerador não dev
 
 Procure usos equivalentes do comportamento defeituoso e corrija os afetados, respeitando diferenças de domínio. Prefira bibliotecas e componentes existentes, verificando a API real antes de usá-la. Ao mudar uma biblioteca consumida localmente, execute seus testes, publique em Maven Local quando esse for o mecanismo de consumo, e confira o artefato atualizado no projeto-alvo. Não rode novamente testes de outras aplicações sem pedido explícito do usuário. `includeBuild` e compilação da fonte não provam que o aplicativo instalado recebeu a mudança.
 
+Para cores, estilos e capacidades de terminal em CLIs Python, prefira uma
+biblioteca mantida e multiplataforma, como Rich, em vez de sequências ANSI
+implementadas manualmente. Preserve saída limpa quando redirecionada e respeite
+`NO_COLOR`. Em outras linguagens, escolha a integração equivalente sem confundir
+fachada de logging com backend ou renderizador de terminal.
+
 ## Validar o resultado observável
 
 Teste apenas o projeto alterado e o menor percurso que demonstra o requisito: entrada, ação, persistência, reabertura e resultado visível. Para prévia e exportação, confirme que ambas usam o mesmo estado. Para CLI, teste defaults, opções disponíveis e término de entrada multiline. Para integrações, valide o evento e o destino sem afirmar entrega quando só a chamada local foi testada. Respeite restrições do usuário, como não iniciar uma exportação demorada.

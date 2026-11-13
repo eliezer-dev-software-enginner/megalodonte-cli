@@ -84,6 +84,30 @@ class LiveReloadTests(unittest.TestCase):
                 self.assertTrue(session.reload({}, root))
                 start.assert_called_once()
 
+    def test_start_requests_window_snapshot_before_stopping_running_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            session_dir = root / 'session'
+            session_dir.mkdir()
+            generation = root / 'generation'
+            generation.mkdir()
+            (generation / 'App.class').write_bytes(b'class')
+            session = dev.DevelopmentSession(root, session_dir, True, True)
+            session.process = Mock()
+            session.process.poll.return_value = None
+            description = {'outputs': [], 'classpath': [], 'workingDir': str(root), 'environment': {}}
+            order = []
+            with patch.object(dev, 'launch_command', return_value=['java']), \
+                 patch.object(session, 'snapshot_windows', side_effect=lambda: order.append('snapshot')) as snapshot_windows, \
+                 patch.object(session, 'stop', side_effect=lambda: order.append('stop')) as stop, \
+                 patch.object(dev, 'dependencies', return_value=[]), \
+                 patch.object(dev, 'runtime_signature', return_value=()), \
+                 patch.object(dev.subprocess, 'Popen', return_value=Mock(pid=42)):
+                session.start(description, generation)
+                snapshot_windows.assert_called_once_with()
+                stop.assert_called_once_with()
+                self.assertEqual(['snapshot', 'stop'], order)
+
     def test_launch_uses_frozen_world_agent_and_javafx_modules(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

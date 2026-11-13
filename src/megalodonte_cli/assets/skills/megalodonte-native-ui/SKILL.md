@@ -14,7 +14,14 @@ assinaturas síncronas são descartadas por `SubscriptionScope` (incluindo react
 atualizada). Recursos e assinaturas assíncronas precisam de ciclo de vida próprio.
 Mudanças estruturais (novos métodos `static`, campos, classes, assinaturas ou
 dependências) fazem o comando padrão reiniciar automaticamente o processo cliente;
-esse fallback recria as janelas e perde o estado em memória. A opção
+esse fallback perde o estado em memória. Antes de encerrar o processo antigo, o
+CLI solicita um snapshot JSON das janelas gerenciadas. O novo processo restaura
+posição, tamanho, modo maximizado/tela cheia/minimizado, visibilidade e a intenção
+de foco. Se o aplicativo estava atrás de outro, não deve solicitar foco e envia
+as janelas recriadas para trás. JavaFX não restaura portavelmente a posição exata
+no z-order do sistema; Wayland pode impedir esse controle. Janelas secundárias só
+reaparecem quando o startup volta a criá-las no mesmo papel/ordem; isso não migra
+estado de domínio. A opção
 `--no-restart-on-incompatible` mantém a geração anterior ativa. Documente esses limites e
 não apresente reinício de processo como hot reload com estado preservado. JSONC,
 builds multimódulo e janelas fora de Context/ScreenManager exigem integração própria.

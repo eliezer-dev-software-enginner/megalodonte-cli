@@ -237,11 +237,10 @@ exclude_natives = ["libjfxwebkit.so", "libjfxmedia.so", "jfxwebkit.dll"]
 package_name = "{name}"
 menu_group = "Office"''')
         write(root / ".gitignore", ".gradle/\nbuild/\ndist/\n.packaging/\n.idea/\n*.iml")
-        write(root / "src/main/resources/icon.svg", '''<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <rect width="256" height="256" rx="54" fill="#17384a"/>
-  <path d="M47 128h162M128 47v162" stroke="#66d5c7" stroke-width="22" stroke-linecap="round"/>
-</svg>''')
+        (root / "src/main/resources").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
         shutil.copy2(ASSETS / "starter-icon.png", root / "src/main/resources/icon.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
         if mode == "jsonc":
             write(root / "src/main/resources/application.properties", f'''app.name={properties_title}
 app.initialView=home
@@ -352,7 +351,11 @@ public final class Main {
 Esse exemplo ilustra o padrão para uma tela Java; não é um substituto direto do inicializador JSONC. Para aplicá-lo ao JSONC, adapte a entrada Java preservando a leitura da configuração, a criação da view declarativa e seu fechamento. `MyTheme` e `HomeScreen` representam classes da aplicação. No Wayland, o diagnóstico pode ser diferente.'''
         write(root / "docs/images/live-reload.svg",
               ASSETS.joinpath("live-reload-architecture-pt.svg").read_text(encoding="utf-8"))
-        write(root / "README.md", f'''# {display_name}
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.
 
@@ -376,8 +379,10 @@ e seu conteúdo não é gravado no protocolo. Mudanças compatíveis atualizam a
 o estado das telas. Erros de compilação conservam a versão em execução.
 Mudanças estruturais (incluindo novos métodos `static`, campos, classes e assinaturas)
 ou de dependências reiniciam automaticamente o processo da aplicação para aplicar a
-geração compilada; nesse fallback, as janelas são recriadas e o estado em memória é
-perdido. Use `--no-restart-on-incompatible` para manter a versão anterior ativa,
+geração compilada; nesse fallback, as janelas gerenciadas recriadas pelo startup
+recuperam posição, tamanho, modo e intenção de foco, mas o estado em memória é
+perdido. A ordem exata entre janelas de outros aplicativos depende do sistema
+operacional e não é garantida pelo JavaFX. Use `--no-restart-on-incompatible` para manter a versão anterior ativa,
 `--offline` para dependências já disponíveis no cache e Ctrl+C para
 encerrar. O cache de views JSONC não está integrado a esse mecanismo.
 Veja os [limites e exemplos do live reload](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
@@ -398,6 +403,19 @@ Esse protótipo é separado da mensageria incremental entre projeto e compilador
 ## Empacotar
 
 `python3 scripts/package.py build appimage` cria um AppImage no Linux. O workflow de GitHub Actions gera AppImage, DEB e MSI em tags `v*` ou por execução manual; consulte [o workflow](.github/workflows/package.yml) para os requisitos de cada sistema.
+
+## JavaFX: quando preciso instalar os módulos?
+
+Para `./gradlew run` e `megalodonte dev`, não é necessário instalar um SDK
+JavaFX manualmente. O plugin OpenJFX do Gradle resolve a versão e os artefatos
+nativos da plataforma; o CLI monta o module path automaticamente no live reload.
+O primeiro build requer acesso aos repositórios configurados, salvo quando as
+dependências já estiverem no cache. `--offline` depende desse cache.
+
+Para **construir** AppImage, DEB ou MSI com `jlink`/`jpackage`, forneça o SDK
+JavaFX completo por `javafx.sdk` no `packaging.toml` ou por
+`JAVAFX_MODULES_HOME` (não `JAVAFX_MODULES`). Quem apenas executa o aplicativo já
+empacotado não precisa dessa variável: o runtime gerado já contém os módulos.
 
 ## Código
 
@@ -496,9 +514,10 @@ tasks.named("check") {{ dependsOn(verifyAndroidDependencies) }}''')
         </activity>
     </application>
 </manifest>''')
-        write(root / "app/src/main/res/drawable/ic_megalodonte.xml", '''<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <corners android:radius="12dp"/><solid android:color="#17384a"/>
-</shape>''')
+        (root / "app/src/main/res/drawable").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ASSETS / "starter-icon.png", root / "app/src/main/res/drawable/ic_megalodonte.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
         java = root / "app/src/main/java" / package_path
         if mode == "native":
             write(java / "MainActivity.java", f'''package {package};
@@ -567,7 +586,11 @@ public final class MainActivity extends MegalodonteActivity {{
         for item in ("gradlew", "gradlew.bat"):
             shutil.copy2(ASSETS / item, root / item)
         shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
-        write(root / "README.md", f'''# {display_name}
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 Megalodonte Android application using **{mode}** UI. It supports Android API {min_sdk} and later, and targets API 35.
 Its screen uses only Megalodonte components; JSONC is rendered by the Android bridge.
@@ -704,7 +727,15 @@ public final class HomeScreen implements RokuScreen {{
                         new Button("Voltar ao início", "home"))).pages();
     }}
 }}''')
-        write(root / "README.md", f'''# {display_name}
+        (root / "src/main/resources").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ASSETS / "starter-icon.png", root / "src/main/resources/icon.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 A Megalodonte Roku example authored in Java. The Java screen runs **at build time**;
 the output is native Roku SceneGraph XML and BrightScript, not a JVM on the TV.
