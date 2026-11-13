@@ -237,11 +237,10 @@ exclude_natives = ["libjfxwebkit.so", "libjfxmedia.so", "jfxwebkit.dll"]
 package_name = "{name}"
 menu_group = "Office"''')
         write(root / ".gitignore", ".gradle/\nbuild/\ndist/\n.packaging/\n.idea/\n*.iml")
-        write(root / "src/main/resources/icon.svg", '''<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <rect width="256" height="256" rx="54" fill="#17384a"/>
-  <path d="M47 128h162M128 47v162" stroke="#66d5c7" stroke-width="22" stroke-linecap="round"/>
-</svg>''')
+        (root / "src/main/resources").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
         shutil.copy2(ASSETS / "starter-icon.png", root / "src/main/resources/icon.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
         if mode == "jsonc":
             write(root / "src/main/resources/application.properties", f'''app.name={properties_title}
 app.initialView=home
@@ -352,7 +351,11 @@ public final class Main {
 Esse exemplo ilustra o padrão para uma tela Java; não é um substituto direto do inicializador JSONC. Para aplicá-lo ao JSONC, adapte a entrada Java preservando a leitura da configuração, a criação da view declarativa e seu fechamento. `MyTheme` e `HomeScreen` representam classes da aplicação. No Wayland, o diagnóstico pode ser diferente.'''
         write(root / "docs/images/live-reload.svg",
               ASSETS.joinpath("live-reload-architecture-pt.svg").read_text(encoding="utf-8"))
-        write(root / "README.md", f'''# {display_name}
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 Aplicação desktop Megalodonte em modo **{mode}**. Este projeto inicial mostra uma tela nativa e serve como ponto de partida para a interface e as regras da aplicação.
 
@@ -498,9 +501,10 @@ tasks.named("check") {{ dependsOn(verifyAndroidDependencies) }}''')
         </activity>
     </application>
 </manifest>''')
-        write(root / "app/src/main/res/drawable/ic_megalodonte.xml", '''<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <corners android:radius="12dp"/><solid android:color="#17384a"/>
-</shape>''')
+        (root / "app/src/main/res/drawable").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ASSETS / "starter-icon.png", root / "app/src/main/res/drawable/ic_megalodonte.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
         java = root / "app/src/main/java" / package_path
         if mode == "native":
             write(java / "MainActivity.java", f'''package {package};
@@ -569,7 +573,11 @@ public final class MainActivity extends MegalodonteActivity {{
         for item in ("gradlew", "gradlew.bat"):
             shutil.copy2(ASSETS / item, root / item)
         shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
-        write(root / "README.md", f'''# {display_name}
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 Megalodonte Android application using **{mode}** UI. It supports Android API {min_sdk} and later, and targets API 35.
 Its screen uses only Megalodonte components; JSONC is rendered by the Android bridge.
@@ -706,7 +714,15 @@ public final class HomeScreen implements RokuScreen {{
                         new Button("Voltar ao início", "home"))).pages();
     }}
 }}''')
-        write(root / "README.md", f'''# {display_name}
+        (root / "src/main/resources").mkdir(parents=True, exist_ok=True)
+        (root / "docs/images").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ASSETS / "starter-icon.png", root / "src/main/resources/icon.png")
+        shutil.copy2(ASSETS / "starter-icon.png", root / "docs/images/megalodonte-logo.png")
+        write(root / "README.md", f'''<p align="center">
+  <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+</p>
+
+# {display_name}
 
 A Megalodonte Roku example authored in Java. The Java screen runs **at build time**;
 the output is native Roku SceneGraph XML and BrightScript, not a JVM on the TV.
