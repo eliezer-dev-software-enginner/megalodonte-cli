@@ -67,9 +67,12 @@ Library source trees are not watched automatically. Stop/start the session after
 editing them to rebuild and freeze the new dependency JARs. Changes to resolved
 dependency contents, launch configuration or Java class structure automatically
 restart the application child in a regular `megalodonte dev` session; adding JARs
-to an already running class loader is not supported. In-memory state is lost and
-windows are recreated on that fallback. `--no-restart-on-incompatible` keeps the
-previous generation active instead.
+to an already running class loader is not supported. In-memory application state
+is lost on that fallback. Framework-managed windows created again during startup
+restore their saved bounds, window mode and foreground/background intent.
+JavaFX cannot portably restore an exact OS z-order, and secondary windows that
+startup does not recreate remain closed. `--no-restart-on-incompatible` keeps
+the previous generation active instead.
 
 Structural Java edits, cached JSONC views, custom launch hooks and unmanaged
 windows retain the limits described in the

@@ -376,8 +376,10 @@ e seu conteúdo não é gravado no protocolo. Mudanças compatíveis atualizam a
 o estado das telas. Erros de compilação conservam a versão em execução.
 Mudanças estruturais (incluindo novos métodos `static`, campos, classes e assinaturas)
 ou de dependências reiniciam automaticamente o processo da aplicação para aplicar a
-geração compilada; nesse fallback, as janelas são recriadas e o estado em memória é
-perdido. Use `--no-restart-on-incompatible` para manter a versão anterior ativa,
+geração compilada; nesse fallback, as janelas gerenciadas recriadas pelo startup
+recuperam posição, tamanho, modo e intenção de foco, mas o estado em memória é
+perdido. A ordem exata entre janelas de outros aplicativos depende do sistema
+operacional e não é garantida pelo JavaFX. Use `--no-restart-on-incompatible` para manter a versão anterior ativa,
 `--offline` para dependências já disponíveis no cache e Ctrl+C para
 encerrar. O cache de views JSONC não está integrado a esse mecanismo.
 Veja os [limites e exemplos do live reload](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).

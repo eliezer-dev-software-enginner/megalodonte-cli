@@ -137,6 +137,8 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("skills/megalodonte-native-ui/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("skills/criterioso/SKILL.md", (app / "AGENTS.md").read_text())
                 self.assertIn("megalodonte skills install --project .", (app / "README.md").read_text())
+                if platform == "desktop":
+                    self.assertIn("recuperam posição, tamanho, modo e intenção de foco", (app / "README.md").read_text())
                 skill.write_text("stale")
                 general.write_text("stale")
                 self.assertEqual(MODULE.sync_skills(app), skill)

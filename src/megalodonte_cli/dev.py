@@ -170,6 +170,7 @@ class DevelopmentSession:
     def start(self, description: dict, generation: Path) -> None:
         # Validate launch support before stopping an existing process.
         command = launch_command(description, self.session)
+        self.snapshot_windows()
         self.stop()
         active = self.session / 'active'
         if active.exists():
@@ -197,6 +198,29 @@ class DevelopmentSession:
         self.description = description
         self.signature = runtime_signature(description)
         print(f'[live-reload] Application PID {self.process.pid}; world {self.session}', flush=True)
+
+    def snapshot_windows(self) -> bool:
+        """Ask the running JavaFX child to persist window state before replacement."""
+        if self.process is None or self.process.poll() is not None:
+            return False
+        request_id = f'snapshot:{time.time_ns()}'
+        marker = self.session / 'request.tmp'
+        marker.write_text(request_id, encoding='utf-8')
+        marker.replace(self.session / 'request')
+        deadline = time.monotonic() + 5
+        while self.process.poll() is None and time.monotonic() < deadline:
+            response = self.session / 'response'
+            if response.exists():
+                lines = response.read_text(encoding='utf-8').splitlines()
+                if len(lines) >= 2 and lines[0] == request_id:
+                    if lines[1] == 'SNAPSHOT':
+                        print('[live-reload] Saved ' + ' '.join(lines[2:]) + ' for restart.', flush=True)
+                        return True
+                    print('[live-reload] Window state was not saved: ' + ' '.join(lines[1:]), flush=True)
+                    return False
+            time.sleep(.05)
+        print('[live-reload] Window state snapshot timed out; restarting without restored placement.', flush=True)
+        return False
 
     def stop(self) -> None:
         if self.process is not None and self.process.poll() is None:
@@ -234,7 +258,7 @@ class DevelopmentSession:
         if status == 'RESTART_REQUIRED':
             if self.restart:
                 print('[live-reload] Structural or dependency change requires a fresh JVM. '
-                      'Restarting automatically; windows are recreated and in-memory state resets.', flush=True)
+                      'Restarting automatically; window placement will be restored and in-memory state resets.', flush=True)
                 self.start(description, generation)
                 return True
             print('[live-reload] Old version remains active because automatic restart was disabled.', flush=True)
