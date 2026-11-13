@@ -54,6 +54,8 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("context.useView(new HomeScreen(), 1260, 780)", readme)
                 self.assertIn("docs/images/live-reload.svg", readme)
                 self.assertIn("docs/images/megalodonte-logo.png", readme)
+                self.assertIn("JAVAFX_MODULES_HOME", readme)
+                self.assertIn("module path automaticamente", readme)
                 diagram = app / "docs/images/live-reload.svg"
                 self.assertTrue(diagram.is_file())
                 diagram_text = diagram.read_text()

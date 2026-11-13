@@ -404,6 +404,19 @@ Esse protótipo é separado da mensageria incremental entre projeto e compilador
 
 `python3 scripts/package.py build appimage` cria um AppImage no Linux. O workflow de GitHub Actions gera AppImage, DEB e MSI em tags `v*` ou por execução manual; consulte [o workflow](.github/workflows/package.yml) para os requisitos de cada sistema.
 
+## JavaFX: quando preciso instalar os módulos?
+
+Para `./gradlew run` e `megalodonte dev`, não é necessário instalar um SDK
+JavaFX manualmente. O plugin OpenJFX do Gradle resolve a versão e os artefatos
+nativos da plataforma; o CLI monta o module path automaticamente no live reload.
+O primeiro build requer acesso aos repositórios configurados, salvo quando as
+dependências já estiverem no cache. `--offline` depende desse cache.
+
+Para **construir** AppImage, DEB ou MSI com `jlink`/`jpackage`, forneça o SDK
+JavaFX completo por `javafx.sdk` no `packaging.toml` ou por
+`JAVAFX_MODULES_HOME` (não `JAVAFX_MODULES`). Quem apenas executa o aplicativo já
+empacotado não precisa dessa variável: o runtime gerado já contém os módulos.
+
 ## Código
 
 A tela inicial está em `src/main/`.{SKILL_README}''')

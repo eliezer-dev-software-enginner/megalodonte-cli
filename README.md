@@ -185,6 +185,27 @@ cd my-app
 ./gradlew run
 ```
 
+## FAQ
+
+### Do I need to install the JavaFX modules? When?
+
+Not for normal development or execution. Generated desktop projects apply the
+OpenJFX Gradle plugin, which resolves JavaFX 25.0.1 and the native artifacts for
+the current operating system from the configured repositories. `./gradlew run`
+uses that runtime classpath directly. `megalodonte dev` reads the same Gradle
+classpath, moves the platform-specific JavaFX JARs to the JVM module path, and
+adds `ALL-MODULE-PATH` automatically. The first build therefore needs repository
+access, unless the artifacts are already in the Gradle cache; `--offline` only
+works with cached dependencies.
+
+An external JavaFX SDK is required when **building a native runtime or
+installer** with `megalodonte-packaging`, because `jlink` and `jpackage` need the
+SDK's modular JARs and native files. Configure it with `javafx.sdk` in
+`packaging.toml` or with `JAVAFX_MODULES_HOME`. The variable is
+`JAVAFX_MODULES_HOME`, not `JAVAFX_MODULES`. It is not needed on a machine that
+only runs an already packaged application: the generated runtime contains the
+required JavaFX modules.
+
 ## Agent skills
 
 Every generated desktop, Android or Roku project includes `skills/megalodonte-native-ui/SKILL.md` for interfaces and `skills/criterioso/SKILL.md` for investigation, implementation and validation. `AGENTS.md` explains when to read each skill. Copies are versioned with the project; the CLI bundles the canonical versions, so new projects receive the installed CLI's skills.
