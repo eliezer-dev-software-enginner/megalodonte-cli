@@ -12,6 +12,7 @@ import time
 import zipfile
 
 from .dev import DevelopmentSession, dependencies, fingerprint, snapshot
+from .console import native, status_level
 
 
 def host_dependencies(description: dict) -> list[Path]:
@@ -81,7 +82,7 @@ class NativeDevelopmentSession(DevelopmentSession):
                                         text=True, encoding='utf-8')
         self.host_signature = self._signature(description)
         threading.Thread(target=self._read_responses, daemon=True).start()
-        print(f'[native-host] Persistent host PID {self.process.pid}', flush=True)
+        native(f'Persistent host PID {self.process.pid}', 'success')
 
     def _read_responses(self):
         try:
@@ -113,7 +114,7 @@ class NativeDevelopmentSession(DevelopmentSession):
         if self.process is None:
             self._start_host(description)
         elif self.host_signature != self._signature(description):
-            print('[native-host] Host runtime changed. Existing windows kept; stop/start is required.', flush=True)
+            native('Host runtime changed. Existing windows kept; stop/start is required.', 'warning')
             return False
         jars = self._freeze(dependencies(description), self.session / f'worker-libraries-{self.generation}')
         command = native_command(description, jars, [generation], self.worker_main, description['args'], False)
@@ -128,7 +129,7 @@ class NativeDevelopmentSession(DevelopmentSession):
                 if self.process.poll() is not None:
                     raise RuntimeError('Native host exited before acknowledging replacement')
                 if not warned and time.monotonic() - started > 10:
-                    print('[native-host] Waiting for candidate/host. Ctrl+C stops the session.', flush=True)
+                    native('Waiting for candidate/host. Ctrl+C stops the session.', 'warning')
                     warned = True
                 continue
             if isinstance(result, Exception):
@@ -136,8 +137,9 @@ class NativeDevelopmentSession(DevelopmentSession):
             if result.get('request') != self.control_sequence:
                 raise RuntimeError('Unexpected native host response sequence')
             self.last_result = result
-            print('[native-host] ' + result['status'] + ' ' + result.get('detail',
-                  f"generation {result.get('generation')}; {result.get('windows')} windows"), flush=True)
+            native(result['status'] + ' ' + result.get('detail',
+                   f"generation {result.get('generation')}; {result.get('windows')} windows"),
+                   status_level(result['status']))
             return result['status'] == 'APPLIED'
 
     def build(self, expected: dict) -> bool:
@@ -145,7 +147,7 @@ class NativeDevelopmentSession(DevelopmentSession):
         if description is None:
             return False
         if self.watcher.scan(self.watch) != expected:
-            print('[native-host] Source changed during compilation; discarding stale result.', flush=True)
+            native('Source changed during compilation; discarding stale result.', 'warning')
             return False
         self.watch = list(dict.fromkeys([*self.watch, *(Path(path) for path in description['watch'])]))
         self.generation += 1
