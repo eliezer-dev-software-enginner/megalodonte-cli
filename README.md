@@ -4,40 +4,103 @@ Create desktop, Android, and Roku applications with Megalodonte. Desktop and And
 
 ## Install
 
-Requires Python 3.11 or later. From this repository, install the CLI in an isolated environment:
+Requires Python 3.11 or later and [pipx](https://pipx.pypa.io/).
 
-```sh
+### Install the CLI
+
+Clone the repository and run from its root:
+
+```bash
+pipx install --editable .
+pipx ensurepath
+```
+
+Restart your terminal if `~/.local/bin` was newly added to `PATH`.
+
+The editable installation automatically reflects changes to the Python source code. To install without editable mode:
+
+```bash
+pipx install .
+```
+
+Verify the installation:
+
+```bash
+command -v megalodonte
+megalodonte --help
+```
+
+### Update an existing installation
+
+For an existing editable installation, Python source changes are reflected automatically. If package metadata, dependencies or entry points change, reinstall from the repository root:
+
+```bash
+pipx reinstall megalodonte-cli
+```
+
+To install again using the current checkout when the existing installation is non-editable:
+
+```bash
+pipx uninstall megalodonte-cli
 pipx install --editable .
 ```
 
-For a non-editable install, use `pipx install .`. An editable install immediately exposes updates made in this checkout. A Python virtual environment with `pip install -e .` also works.
+### Troubleshooting: command not found or broken executable
+
+If the command returns:
+
+```text
+bash: /home/user/.local/bin/megalodonte: cannot execute: required file not found
+```
+
+or `pipx` reports that the executable already exists and points to an unexpected location, check the launcher:
+
+```bash
+ls -l ~/.local/bin/megalodonte
+```
+
+This may happen when a previous installation used a different pipx environment, such as one inside an IDE sandbox or Flatpak application.
+
+If the path is a stale symbolic link, remove it and reinstall:
+
+```bash
+rm ~/.local/bin/megalodonte
+pipx reinstall megalodonte-cli
+hash -r
+```
+
+Only remove the launcher after confirming that it is the stale link associated with this CLI.
+
+If the package is not installed in the current pipx environment, run the following from the repository root instead:
+
+```bash
+pipx install --editable .
+```
+
+Finally, verify:
+
+```bash
+megalodonte --help
+```
+
+If the executable is still not found, confirm that `~/.local/bin` is included in your `PATH`.
 
 ### Why the `megalodonte` command exists
 
-The command name is declared by the package in `pyproject.toml`:
+The command name is declared in `pyproject.toml`:
 
 ```toml
 [project.scripts]
 megalodonte = "megalodonte_cli.cli:main"
 ```
 
-When `pipx` installs the package, it creates a small executable launcher named
-`megalodonte` in its binary directory (normally `~/.local/bin`). That directory
-must be present in `PATH`; `pipx ensurepath` configures it when necessary. The
-launcher imports `megalodonte_cli.cli.main`, which interprets the next argument as
-a command. This is why `megalodonte dev`, `megalodonte skills sync`, and the normal
-project-generation options all begin with the same executable name.
+When `pipx` installs the package, it creates an executable launcher named `megalodonte`, normally in `~/.local/bin`.
 
-Check which installation your shell is using with:
+The launcher imports `megalodonte_cli.cli.main`, which interprets the next argument as a command.
 
-```sh
-command -v megalodonte
-megalodonte --help
-```
+This is why commands such as `megalodonte dev`, `megalodonte skills sync`, and project-generation options use the same executable name.
 
-An installation made inside a regular Python virtual environment exposes the
-command only while that environment is active, unless its `bin` directory is
-added to `PATH` separately.
+A regular Python virtual environment with `pip install -e .` is also supported. In that case, the executable is available while the virtual environment is activated.
 
 ## Develop with live reload
 

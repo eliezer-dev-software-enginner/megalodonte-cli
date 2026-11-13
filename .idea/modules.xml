@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/assets.iml" filepath="$PROJECT_DIR$/.idea/modules/assets.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/megalodonte-cli.iml" filepath="$PROJECT_DIR$/.idea/megalodonte-cli.iml" />
     </modules>
   </component>
