@@ -14,6 +14,10 @@ class NewApplicationTests(unittest.TestCase):
                 app = MODULE.create(f"escaped-{mode}", mode, title, root)
                 packaging = tomllib.loads((app / "packaging.toml").read_text())
                 self.assertEqual(packaging["app"]["name"], title)
+                self.assertNotIn("version", packaging["app"])
+                self.assertEqual((app / "gradle.properties").read_text(), "appVersion=0.1.0\n")
+                self.assertIn('version = providers.gradleProperty("appVersion").get()',
+                              (app / "build.gradle.kts").read_text())
                 if mode == "native":
                     main = (app / "src/main/java/escaped_native/Main.java").read_text()
                     self.assertIn("AppHost extends MegalodonteApplication", main)

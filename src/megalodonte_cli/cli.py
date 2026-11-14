@@ -195,7 +195,7 @@ if (providers.gradleProperty("useLocalSources").orNull != "false") {{
     id("org.openjfx.javafxplugin") version "0.1.0"
 }}
 group = "megalodonte"
-version = "0.1.0"
+version = providers.gradleProperty("appVersion").get()
 repositories {{ mavenLocal(); mavenCentral() }}
 java {{ toolchain {{ languageVersion.set(JavaLanguageVersion.of(25)) }} }}
 javafx {{ version = "25.0.1"; modules("javafx.controls", "javafx.graphics") }}
@@ -217,7 +217,6 @@ tasks.withType<JavaCompile>().configureEach {{ options.encoding = "UTF-8" }}''')
 
 [app]
 name = {quoted_title}
-version = "0.1.0"
 main_class = "{main_class}"
 icon_linux = "src/main/resources/icon.png"
 
@@ -236,6 +235,7 @@ exclude_natives = ["libjfxwebkit.so", "libjfxmedia.so", "jfxwebkit.dll"]
 [linux]
 package_name = "{name}"
 menu_group = "Office"''')
+        write(root / "gradle.properties", "appVersion=0.1.0")
         write(root / ".gitignore", ".gradle/\nbuild/\ndist/\n.packaging/\n.idea/\n*.iml")
         (root / "src/main/resources").mkdir(parents=True, exist_ok=True)
         (root / "docs/images").mkdir(parents=True, exist_ok=True)
