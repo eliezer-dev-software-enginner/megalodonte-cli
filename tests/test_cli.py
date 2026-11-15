@@ -99,6 +99,7 @@ class NewApplicationTests(unittest.TestCase):
                                  (MODULE.ASSETS / "starter-icon.png").read_bytes())
                 self.assertFalse((app / "app/src/main/res/drawable/ic_megalodonte.xml").exists())
                 self.assertIn("docs/images/megalodonte-logo.png", (app / "README.md").read_text())
+                self.assertIn("docs/CLIENT_API.md", (app / "README.md").read_text())
                 if mode == "jsonc":
                     view = (app / "app/src/main/assets/views/home.view.jsonc").read_text()
                     activity = (app / "app/src/main/java/megalodonte/app/android_jsonc/MainActivity.java").read_text()

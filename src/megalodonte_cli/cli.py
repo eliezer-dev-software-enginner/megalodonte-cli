@@ -594,7 +594,9 @@ public final class MainActivity extends MegalodonteActivity {{
 
 Megalodonte Android application using **{mode}** UI. It supports Android API {min_sdk} and later, and targets API 35.
 Its screen uses only Megalodonte components; JSONC is rendered by the Android bridge.
-The [Android JSONC guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md)
+The [Android client API](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/CLIENT_API.md)
+documents native screens, reactive state and lists, and `UI.runOnUi` for work that
+returns from background threads. The [Android JSONC guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md)
 lists the supported component types, bindings and platform-specific properties.
 
 Install JDK 25 and Android SDK Platform 35. Clone `megalodonte-android`,
