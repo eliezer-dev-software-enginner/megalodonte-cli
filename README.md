@@ -1,10 +1,12 @@
 <p align="center">
+
   <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
+
 </p>
 
 # Megalodonte CLI
 
-Create desktop, Android, and Roku applications with Megalodonte. Desktop and Android support declarative JSONC views (`jsonc`) and Java screens (`native`). Roku initially supports Java-authored native screens: Java runs at build time and produces SceneGraph XML and BrightScript for the TV. The CLI generates a Gradle build, wrapper, starter screen, GitHub Actions workflow, icon, and local Git repository. Desktop projects also receive AppImage, DEB and MSI packaging.
+Create desktop, Android, and Roku applications with Megalodonte. Desktop and Android use native Java screens and components. Roku uses Java-authored screens: Java runs at build time and produces SceneGraph XML and BrightScript for the TV. The CLI generates a Gradle build, wrapper, starter screen, GitHub Actions workflow, icon, and local Git repository. Desktop projects also receive AppImage, DEB and MSI packaging.
 
 ## Install
 
@@ -16,6 +18,7 @@ Clone the repository and run from its root:
 
 ```bash
 pipx install --editable .
+
 pipx ensurepath
 ```
 
@@ -31,6 +34,7 @@ Verify the installation:
 
 ```bash
 command -v megalodonte
+
 megalodonte --help
 ```
 
@@ -46,6 +50,7 @@ To install again using the current checkout when the existing installation is no
 
 ```bash
 pipx uninstall megalodonte-cli
+
 pipx install --editable .
 ```
 
@@ -69,7 +74,9 @@ If the path is a stale symbolic link, remove it and reinstall:
 
 ```bash
 rm ~/.local/bin/megalodonte
+
 pipx reinstall megalodonte-cli
+
 hash -r
 ```
 
@@ -95,6 +102,7 @@ The command name is declared in `pyproject.toml`:
 
 ```toml
 [project.scripts]
+
 megalodonte = "megalodonte_cli.cli:main"
 ```
 
@@ -109,47 +117,81 @@ A regular Python virtual environment with `pip install -e .` is also supported. 
 ## Develop with live reload
 
 From an existing native desktop application, use `megalodonte dev --project .`
+
 (`--offline` uses cached dependencies). The CLI watches source and resource
+
 changes, debounces saves, compiles incrementally with Gradle in a temporary world,
+
 and sends complete successful generations to the running JVM. The first build
+
 records a JSON manifest of project files, Java tokens/symbols and hashes; later
+
 builds record only deltas. File contents use a local content-addressed store, so
+
 binary resources are not inflated into JSON. Compiler responses contain status
+
 and output artifact hashes rather than retransmitting the entire application.
+
 The normal project
+
 `build/` and running dependency JARs are not overwritten. All visible windows
+
 registered through `Context` or `ScreenManager` rerender with the same screen
+
 instances. Logs report applied class/window counts and failures.
 
 Install matching updated `megalodonte-core`, `megalodonte-base`, and, if used,
+
 `megalodonte-reactivity` artifacts first. This currently supports single-project,
+
 non-modular native desktop applications using Gradle's `application` plugin.
 
 Composite dependencies (`includeBuild`) are supported. The init script targets
+
 only the supervised application's canonical directory; included libraries keep
+
 their own build outputs and are frozen as dependencies when the app starts.
+
 Gradle keeps its per-build `.gradle` caches; only the application's compiled
+
 output and runtime generations move to the temporary world.
+
 Library source changes are not watched automatically: stop/start the session to
+
 rebuild and load them. The application itself must still be single-project. See
+
 [docs/live-reload-known-limitations.md](docs/live-reload-known-limitations.md)
+
 for the composite-build fix, validation and remaining limits.
 
 Failed compilation keeps the application running. Compatible method-body edits
+
 retain the JVM, screen instances and managed windows. Structural changes such as
+
 new component factories, imports that introduce new classes, fields, methods or
+
 signatures, and dependency changes automatically restart the application child so
+
 the successful generation becomes visible. That fallback recreates windows and
+
 loses in-memory state; use `--no-restart-on-incompatible` only when keeping the old
+
 generation active is preferable. Ctrl+C ends the development session.
+
 `--debounce 0.8` changes the quiet interval in seconds.
 
 This does not copy raw memory, reinitialize existing objects, migrate arbitrary
-state, or update cached JSONC views. For the full supported-change matrix and
+
+state. For the full supported-change matrix and
+
 rollback limits, see the [base live reload guide](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/LIVE_RELOAD.md).
+
 Environment-file values are never placed in protocol JSON; changing `.env`
+
 requires restarting the development session. Java token comparison detects the
+
 smallest source difference, while javac still compiles class/source units and
+
 affected dependents. Tokenization cannot bypass JVM class-shape restrictions.
 
 ![Incremental live reload architecture](src/megalodonte_cli/assets/live-reload-architecture-en.svg)
@@ -159,9 +201,11 @@ Validate the CLI with `PYTHONPATH=src python -m unittest discover -s tests`.
 ### Experimental persistent native windows
 
 This is a separate experiment, not the project-to-compiler messaging described
+
 above. It should not be inferred as automatic serialization of an existing app.
 
 For Java workers explicitly using `NativeWorker.Application` from the updated
+
 base library:
 
 ```sh
@@ -169,21 +213,33 @@ megalodonte dev --native-host --worker-main your.package.WorkerMain
 ```
 
 This keeps a permanent JavaFX host and replaces worker JVMs after successful
+
 builds, including class additions/removals and structural changes. It does not
+
 adapt ordinary application Main classes or existing component trees automatically.
+
 JSON is internal messaging; application code remains Java. The current prototype
+
 supports text, buttons, inputs, rows and columns; stable input IDs retain edited
+
 text, while arbitrary business state requires explicit migration.
 
 Host runtime changes require a manual stop/start; this mode never automatically
+
 restarts the host. Rejected candidates keep the previous worker and windows.
+
 Generation files remain until the session ends. Closing any window ends the
+
 prototype host session. See the [native messaging design and API](https://github.com/eliezer-dev-software-enginner/megalodonte-base/blob/main/docs/NATIVE_MESSAGING.md).
 
 Explicit integration check (display and published artifacts required):
+
 `PYTHONPATH=src python tests/integration_native_host.py`.
+
 The opt-in `PYTHONPATH=src python tests/integration_live_reload.py` additionally
+
 requires JDK 25, local artifacts, Gradle dependencies and a display, and exercises
+
 a temporary generated consumer without touching user projects.
 
 ## Create an application
@@ -191,14 +247,16 @@ a temporary generated consumer without touching user projects.
 From the desired parent directory:
 
 ```sh
-megalodonte my-app --mode jsonc --display-name "My App"
-megalodonte another-app --mode native
-megalodonte phone-app --platform android --mode native
-megalodonte phone-jsonc --platform android --mode jsonc
-megalodonte roku-hello-world --platform roku --mode native --display-name "Megalodonte Roku Hello"
+megalodonte my-app --display-name "My App"
+
+megalodonte another-app --platform desktop
+
+megalodonte phone-app --platform android
+
+megalodonte roku-hello-world --platform roku --display-name "Megalodonte Roku Hello"
 ```
 
-On desktop, `jsonc` creates a declarative starter view and a Java `ViewScript`; `native` creates a Java screen composed from Megalodonte components. On Android, `native` creates a `ScreenComponent`; `jsonc` stores the view under `app/src/main/assets/views/` and renders it through the Android bridge. See the [Android component guide](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/JSONC_ANDROID.md) for supported components, behavior, and property differences from desktop. The project is created in `./my-app` (or the chosen `--output-root`). The CLI also runs `git init`, so Git must be available. Names must start with a lowercase letter and may contain lowercase letters, digits, and single hyphens between groups; `--mode` is required. Desktop builds target Java 25 and JavaFX 25.0.1. To test and launch a desktop project:
+On desktop, the CLI generates a Java screen composed from Megalodonte components. On Android, it generates a native `ScreenComponent` using the Android bridge. The project is created in `./my-app` (or the chosen `--output-root`). The CLI also runs `git init`, so Git must be available. Names must start with a lowercase letter and may contain lowercase letters, digits, and single hyphens between groups. Desktop builds target Java 25 and JavaFX 25.0.1. To test and launch a desktop project:
 
 Native desktop starters register their bundled icon and use an application-specific JavaFX host, so Linux docks can match the running window to its own icon.
 
@@ -210,41 +268,52 @@ import megalodonte.application.MegalodonteApplication;
 import megalodonte.base.theme.ThemeManager;
 
 public final class Main {
-    public static final class AppHost extends MegalodonteApplication {}
 
-    static void main(String[] args) {
-        ThemeManager.setTheme(new MyTheme());
+    public static final class AppHost extends *MegalodonteApplication* {}
+
+    static void main(String[] *args*) {
+
+        ThemeManager.setTheme(**new** MyTheme());
         MegalodonteApp.appName("My App");
         MegalodonteApp.appIcon("/icon.png");
+
         MegalodonteApp.run(AppHost.class, args, context -> {
+
             context.javafxStage().setMinWidth(980);
             context.javafxStage().setMinHeight(650);
-            context.useView(new HomeScreen(), 1260, 780);
+
+            context.useView(**new** HomeScreen(), 1260, 780);
         });
+
     }
 }
 ```
 
 `MyTheme` and `HomeScreen` stand for your theme and screen classes; keep any
+
 additional startup logic your application needs. The generated starter uses
+
 `DefaultTheme` and can use its default window dimensions.
 
 If Linux shows the wrong dock icon, check `appName`, `appIcon`, the application's
-own `AppHost` and the `StartupWMClass` of its `.desktop` entry. On X11, run
-`xprop WM_CLASS` and click the window to inspect its actual class. Development
-entries are written under `~/.local/share/applications/` and refer to an icon
-whose filename contains a content hash. Rebuild and restart after source changes;
-rebuild and reinstall packaged applications. Dock behavior and Wayland
-diagnostics vary by desktop environment.
 
-For JSONC starters, set `app.icon=/icon.png` in `application.properties` to
-configure the window icon. The shared JSONC launcher currently uses a shared
-JavaFX host, so a unique dock icon is not guaranteed by this setting alone;
-an application-specific Java entry point is needed for the host-based approach.
+own `AppHost` and the `StartupWMClass` of its `.desktop` entry. On X11, run
+
+`xprop WM_CLASS` and click the window to inspect its actual class. Development
+
+entries are written under `~/.local/share/applications/` and refer to an icon
+
+whose filename contains a content hash. Rebuild and restart after source changes;
+
+rebuild and reinstall packaged applications. Dock behavior and Wayland
+
+diagnostics vary by desktop environment.
 
 ```sh
 cd my-app
+
 ./gradlew test
+
 ./gradlew run
 ```
 
@@ -253,20 +322,33 @@ cd my-app
 ### Do I need to install the JavaFX modules? When?
 
 Not for normal development or execution. Generated desktop projects apply the
+
 OpenJFX Gradle plugin, which resolves JavaFX 25.0.1 and the native artifacts for
+
 the current operating system from the configured repositories. `./gradlew run`
+
 uses that runtime classpath directly. `megalodonte dev` reads the same Gradle
+
 classpath, moves the platform-specific JavaFX JARs to the JVM module path, and
+
 adds `ALL-MODULE-PATH` automatically. The first build therefore needs repository
+
 access, unless the artifacts are already in the Gradle cache; `--offline` only
+
 works with cached dependencies.
 
-An external JavaFX SDK is required when **building a native runtime or
-installer** with `megalodonte-packaging`, because `jlink` and `jpackage` need the
+An external JavaFX SDK is required when \*\*building a native runtime or
+
+installer\*\* with `megalodonte-packaging`, because `jlink` and `jpackage` need the
+
 SDK's modular JARs and native files. Configure it with `javafx.sdk` in
+
 `packaging.toml` or with `JAVAFX_MODULES_HOME`. The variable is
+
 `JAVAFX_MODULES_HOME`, not `JAVAFX_MODULES`. It is not needed on a machine that
+
 only runs an already packaged application: the generated runtime contains the
+
 required JavaFX modules.
 
 ## Agent skills
@@ -295,11 +377,17 @@ Android projects target API 35 and default to a minimum of API 35. For older TV 
 
 ```text
 my-app/
+
   framework/
+
     megalodonte-android/
+
     libraries/
+
       megalodonte-core/
+
       megalodonte-theme/
+
       megalodonte-reactivity-portable/
 ```
 
@@ -313,16 +401,26 @@ The debug APK is `app/build/outputs/apk/debug/app-debug.apk`. The generated work
 
 ## Roku
 
-`--platform roku --mode native` generates a Java `HomeScreen` using
+`--platform roku` generates a Java `HomeScreen` using
+
 `megalodonte-roku`. The generated build requires a Java 25 toolchain and a
+
 checkout of `megalodonte-roku`. Outside this workspace, place the checkout at
+
 `framework/megalodonte-roku` relative to the generated project, or set
+
 `MEGALODONTE_ROKU_HOME` to its path. From the generated project directory, run
+
 `./gradlew packageRoku`; the result is `build/roku/<project>.zip`, ready for Roku
+
 Developer Mode sideloading. The starter demonstrates three routes, unprefixed
+
 `Button`, `Text`, and `Counter` components, a build-time `Theme` palette, and a
+
 runtime counter. `Image` is available for local PNG/JPEG assets. Arbitrary Java
+
 code and desktop/Android component implementations cannot run on Roku. The
+
 generated BrightScript can be checked with the BrighterScript CLI (`bsc`).
 
 ## Development
@@ -333,7 +431,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 
 Keep the generated workflow aligned with `megalodonte-packaging/tools/configure_client_actions.py` when the shared packaging contract changes.
 
-The repository's GitHub Actions workflow tests the installed command and checks that its bundled Gradle wrapper and packaging assets are present. Local end-to-end validation on 2026-10-15 also compiled newly generated JSONC and native applications using the workspace composite builds (`./gradlew test --offline` in each generated application).
+The repository's GitHub Actions workflow tests the installed command and checks that its bundled Gradle wrapper and packaging assets are present. A previous local end-to-end validation on 2026-10-15 compiled generated applications using workspace composite builds (`./gradlew test --offline`). This historical result does not validate the current CLI revision.
 
 ## License
 
