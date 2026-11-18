@@ -272,7 +272,7 @@ def create(name: str, display_name: str, output_root: Path,
 
     main_class = f"{package}.Main"
 
-    dependency = "megalodonte-components:1.0.0-beta"
+    dependency = "megalodonte-components-desktop:1.0.0-beta"
 
     composite = "libraries/megalodonte-components"
 
@@ -629,14 +629,14 @@ def create_android(name: str, display_name: str, output_root: Path,
         write(root / "settings.gradle.kts", f'''pluginManagement {{ repositories {{ google(); mavenCentral(); gradlePluginPortal() }} }}
 dependencyResolutionManagement {{ repositories {{ google(); mavenCentral() }} }}
 rootProject.name = "{name}"
-include(":app", ":framework-core", ":android-bridge")
+include(":app", ":megalodonte-base-android", ":megalodonte-bridge-android")
 val framework = file(System.getenv("MEGALODONTE_ANDROID_HOME") ?: "{relative_framework}")
 require(framework.resolve("android-bridge/build.gradle.kts").isFile) {{
 
     "Set MEGALODONTE_ANDROID_HOME to a checkout of megalodonte-android"
 }}
-project(":framework-core").projectDir = framework.resolve("framework-core")
-project(":android-bridge").projectDir = framework.resolve("android-bridge")
+project(":megalodonte-base-android").projectDir = framework.resolve("framework-core")
+project(":megalodonte-bridge-android").projectDir = framework.resolve("android-bridge")
 includeBuild(framework.resolve("../libraries/megalodonte-core"))
 includeBuild(framework.resolve("../libraries/megalodonte-theme"))
 includeBuild(framework.resolve("../libraries/megalodonte-reactivity-portable"))''')
@@ -681,9 +681,9 @@ android {{
 }}
 dependencies {{
 
-    implementation(project(":framework-core"))
+    implementation(project(":megalodonte-base-android"))
 
-    implementation(project(":android-bridge"))
+    implementation(project(":megalodonte-bridge-android"))
 
     implementation("megalodonte:megalodonte-theme:1.0.0-beta")
 

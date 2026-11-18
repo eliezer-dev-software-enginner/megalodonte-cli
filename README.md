@@ -142,7 +142,7 @@ instances. Logs report applied class/window counts and failures.
 
 Install matching updated `megalodonte-core`, `megalodonte-base-desktop`, and, if used,
 
-`megalodonte-reactivity` artifacts first. This currently supports single-project,
+`megalodonte-reactivity-desktop` artifacts first. This currently supports single-project,
 
 non-modular native desktop applications using Gradle's `application` plugin.
 
