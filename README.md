@@ -373,7 +373,7 @@ Inside `megalodonte-world`, pass `--output-root applications --workspace .` to r
 
 ## Android projects
 
-Android projects target API 35 and default to a minimum of API 35. For older TV boxes, pass `--min-sdk 25` (Android 7.1). The bridge handles legacy system insets and the generated app enables Java library desugaring. They compile Java 17 source and use AGP 8.12.0 with Gradle 8.13. Install JDK 17 and Android SDK Platform 35, and configure Android Studio's Gradle JDK as 17. Native screens use the same reactive state, `ListState`/`Column.items(...)` lists and `UI.runOnUi` main-thread helper as the desktop; the [Android client API](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/CLIENT_API.md) documents their platform behavior. The project uses the source modules in `megalodonte-android` and the shared core, theme and portable reactivity libraries. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
+Android projects target API 35 and default to a minimum of API 35. For older TV boxes, pass `--min-sdk 25` (Android 7.1). The bridge handles legacy system insets and the generated app enables Java library desugaring. They compile Java 17 source and use AGP 8.12.0 with Gradle 8.13. Install JDK 17 and Android SDK Platform 35, and configure Android Studio's Gradle JDK as 17. Native screens use the same reactive state, `ListState`/`Column.items(...)` lists and `UI.runOnUi` main-thread helper as the desktop; the [Android client API](https://github.com/eliezer-dev-software-enginner/megalodonte-android/blob/main/docs/CLIENT_API.md) documents their platform behavior. The project uses the source modules in `megalodonte-android`, shared core and theme builds, and neutral sources from `megalodonte-reactivity`. Outside `megalodonte-world`, place the source checkouts relative to the generated project as follows:
 
 ```text
 my-app/
@@ -388,10 +388,10 @@ my-app/
 
       megalodonte-theme/
 
-      megalodonte-reactivity-portable/
+      megalodonte-reactivity/
 ```
 
-Alternatively, set `MEGALODONTE_ANDROID_HOME` to the `megalodonte-android` checkout; its sibling `libraries/` directory must still contain the three shared library checkouts. From the generated project, run:
+Alternatively, set `MEGALODONTE_ANDROID_HOME` to the `megalodonte-android` checkout; its sibling `libraries/` directory must contain `megalodonte-core`, `megalodonte-theme`, and the original `megalodonte-reactivity` sources compiled into the Android base module. From the generated project, run:
 
 ```sh
 ./gradlew :app:assembleDebug :app:lintDebug

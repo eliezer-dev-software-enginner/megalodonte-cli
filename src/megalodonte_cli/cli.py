@@ -637,11 +637,10 @@ require(framework.resolve("android-bridge/build.gradle.kts").isFile) {{
 
     "Set MEGALODONTE_ANDROID_HOME to a checkout of megalodonte-android"
 }}
-project(":megalodonte-base-android").projectDir = framework.resolve("framework-core")
+project(":megalodonte-base-android").projectDir = framework.resolve("base-android")
 project(":megalodonte-bridge-android").projectDir = framework.resolve("android-bridge")
 includeBuild(framework.resolve("../libraries/megalodonte-core"))
-includeBuild(framework.resolve("../libraries/megalodonte-theme"))
-includeBuild(framework.resolve("../libraries/megalodonte-reactivity-portable"))''')
+includeBuild(framework.resolve("../libraries/megalodonte-theme"))''')
 
         write(root / "build.gradle.kts", f'''plugins {{
 
@@ -813,7 +812,7 @@ returns from background threads.
 Install JDK 17 and Android SDK Platform 35. Android projects use AGP
 {ANDROID_GRADLE_PLUGIN_VERSION} with Gradle {ANDROID_GRADLE_VERSION}; configure
 Android Studio's Gradle JDK as 17. Clone `megalodonte-android`,
-`megalodonte-core`, `megalodonte-theme`, and `megalodonte-reactivity-portable`
+`megalodonte-core`, `megalodonte-theme`, and `megalodonte-reactivity`
 under this project's `framework/` directory, or set
 `MEGALODONTE_ANDROID_HOME` to the Android framework checkout. Then run:
 
@@ -880,9 +879,9 @@ jobs:
 
         with:
 
-          repository: eliezer-dev-software-enginner/megalodonte-reactivity-portable
+          repository: eliezer-dev-software-enginner/megalodonte-reactivity
 
-          path: framework/libraries/megalodonte-reactivity-portable
+          path: framework/libraries/megalodonte-reactivity
 
       - uses: actions/setup-java@v4
 
@@ -890,7 +889,7 @@ jobs:
 
           distribution: temurin
 
-          java-version: '25'
+          java-version: '17'
 
       - uses: android-actions/setup-android@v4
 

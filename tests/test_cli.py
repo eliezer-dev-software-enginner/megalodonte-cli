@@ -9,9 +9,9 @@ class NewApplicationTests(unittest.TestCase):
     def test_desktop_escapes_backslashes_in_generated_formats(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for mode in ("native", "jsonc"):
+            for mode in ("native",):
                 title = " \tPath \\ Demo"
-                app = MODULE.create(f"escaped-{mode}", mode, title, root)
+                app = MODULE.create(f"escaped-{mode}", title, root)
                 packaging = tomllib.loads((app / "packaging.toml").read_text())
                 self.assertEqual(packaging["app"]["name"], title)
                 self.assertNotIn("version", packaging["app"])
@@ -32,11 +32,11 @@ class NewApplicationTests(unittest.TestCase):
                     properties = (app / "src/main/resources/application.properties").read_text()
                     self.assertIn(r"app.name=\ \tPath \\ Demo", properties)
 
-    def test_both_modes_include_build_packaging_and_actions(self):
+    def test_desktop_includes_build_packaging_and_actions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for mode, dependency in (("jsonc", "script-app"), ("native", "megalodonte-base-desktop")):
-                app = MODULE.create(f"sample-{mode}", mode, f"Sample {mode}", root)
+            for mode, dependency in (("native", "megalodonte-base-desktop"),):
+                app = MODULE.create(f"sample-{mode}", f"Sample {mode}", root)
                 self.assertTrue((app / ".git").is_dir())
                 self.assertTrue((app / "packaging.toml").is_file())
                 self.assertIn('icon_linux = "src/main/resources/icon.png"',
@@ -77,18 +77,20 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn(dependency, (app / "build.gradle.kts").read_text())
                 self.assertEqual((app / "src/main/resources/views/home.view.jsonc").exists(), mode == "jsonc")
             with self.assertRaises(FileExistsError):
-                MODULE.create("sample-jsonc", "jsonc", "Duplicate", root)
+                MODULE.create("sample-native", "Duplicate", root)
 
-    def test_android_modes_use_android_bridge_without_javafx(self):
+    def test_android_uses_android_bridge_without_javafx(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for mode in ("native", "jsonc"):
-                app = MODULE.create(f"android-{mode}", mode, f"Android {mode}", root, platform="android")
+            for mode in ("native",):
+                app = MODULE.create(f"android-{mode}", f"Android {mode}", root, platform="android")
                 settings = (app / "settings.gradle.kts").read_text()
                 root_build = (app / "build.gradle.kts").read_text()
                 build = (app / "app/build.gradle.kts").read_text()
                 wrapper = (app / "gradle/wrapper/gradle-wrapper.properties").read_text()
                 self.assertIn('include(":app", ":megalodonte-base-android", ":megalodonte-bridge-android")', settings)
+                self.assertIn('framework.resolve("base-android")', settings)
+                self.assertNotIn("megalodonte-reactivity-portable", settings)
                 self.assertIn('version "8.12.0"', root_build)
                 self.assertIn("gradle-8.13-bin.zip", wrapper)
                 self.assertIn('id("com.android.application")', build)
@@ -116,20 +118,20 @@ class NewApplicationTests(unittest.TestCase):
     def test_android_can_target_legacy_tv_box(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            app = MODULE.create("android-tv", "native", "Android TV", root,
+            app = MODULE.create("android-tv", "Android TV", root,
                                 platform="android", min_sdk=25)
             build = (app / "app/build.gradle.kts").read_text()
             self.assertIn("minSdk = 25", build)
             self.assertIn("isCoreLibraryDesugaringEnabled = true", build)
             self.assertIn("coreLibraryDesugaring(", build)
             with self.assertRaises(ValueError):
-                MODULE.create("too-old", "native", "Too Old", root,
+                MODULE.create("too-old", "Too Old", root,
                               platform="android", min_sdk=24)
 
     def test_roku_native_generates_java_screen_and_sideload_build(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            app = MODULE.create("roku-hello", "native", "Roku Hello", root, platform="roku")
+            app = MODULE.create("roku-hello", "Roku Hello", root, platform="roku")
             self.assertTrue((app / ".git").is_dir())
             screen = (app / "src/main/java/megalodonte/app/roku_hello/HomeScreen.java").read_text()
             self.assertIn("RokuScene", screen)
@@ -142,13 +144,13 @@ class NewApplicationTests(unittest.TestCase):
                              (MODULE.ASSETS / "starter-icon.png").read_bytes())
             self.assertIn("docs/images/megalodonte-logo.png", (app / "README.md").read_text())
             with self.assertRaises(ValueError):
-                MODULE.create("roku-jsonc", "jsonc", "Unsupported", root, platform="roku")
+                MODULE.create("roku-old-mode", "Unsupported", root, platform="roku", min_sdk=25)
 
     def test_projects_bundle_skill_and_support_sync_and_install(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for platform in ("desktop", "android", "roku"):
-                app = MODULE.create(f"skill-{platform}", "native", "Skill Demo", root, platform=platform)
+                app = MODULE.create(f"skill-{platform}", "Skill Demo", root, platform=platform)
                 skill = app / "skills/megalodonte-native-ui/SKILL.md"
                 general = app / "skills/criterioso/SKILL.md"
                 self.assertIn("name: megalodonte-native-ui", skill.read_text())
