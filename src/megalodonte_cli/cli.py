@@ -316,7 +316,7 @@ dependencies {{
 
     implementation("megalodonte:{dependency}")
 
-    implementation("megalodonte:megalodonte-base:1.0.0-beta")
+    implementation("megalodonte:megalodonte-base-desktop:1.0.0-beta")
 
     implementation("megalodonte:megalodonte-theme:1.0.0-beta")
 

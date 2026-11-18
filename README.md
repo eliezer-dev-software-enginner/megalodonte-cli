@@ -140,7 +140,7 @@ registered through `Context` or `ScreenManager` rerender with the same screen
 
 instances. Logs report applied class/window counts and failures.
 
-Install matching updated `megalodonte-core`, `megalodonte-base`, and, if used,
+Install matching updated `megalodonte-core`, `megalodonte-base-desktop`, and, if used,
 
 `megalodonte-reactivity` artifacts first. This currently supports single-project,
 

@@ -16,7 +16,7 @@ from .console import native, status_level
 
 
 def host_dependencies(description: dict) -> list[Path]:
-    prefixes = ('megalodonte-base-', 'megalodonte-core-', 'gson-', 'slf4j-api-', 'javafx-', 'error_prone_annotations-')
+    prefixes = ('megalodonte-base-desktop-', 'megalodonte-core-', 'gson-', 'slf4j-api-', 'javafx-', 'error_prone_annotations-')
     return [jar for jar in dependencies(description) if jar.name.startswith(prefixes)]
 
 
@@ -72,7 +72,7 @@ class NativeDevelopmentSession(DevelopmentSession):
                 with zipfile.ZipFile(jar) as archive:
                     available |= 'megalodonte/application/messaging/NativeHostSupervisor.class' in archive.namelist()
         if not available:
-            raise ValueError('Publish/update megalodonte-base: NativeHostSupervisor is required')
+            raise ValueError('Publish/update megalodonte-base-desktop: NativeHostSupervisor is required')
         frozen = self._freeze(jars, self.session / 'host-libraries')
         command = native_command(description, frozen, [],
                                  'megalodonte.application.messaging.NativeHostSupervisor', [], True)

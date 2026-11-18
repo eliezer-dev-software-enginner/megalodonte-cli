@@ -35,7 +35,7 @@ class NewApplicationTests(unittest.TestCase):
     def test_both_modes_include_build_packaging_and_actions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for mode, dependency in (("jsonc", "script-app"), ("native", "megalodonte-base")):
+            for mode, dependency in (("jsonc", "script-app"), ("native", "megalodonte-base-desktop")):
                 app = MODULE.create(f"sample-{mode}", mode, f"Sample {mode}", root)
                 self.assertTrue((app / ".git").is_dir())
                 self.assertTrue((app / "packaging.toml").is_file())

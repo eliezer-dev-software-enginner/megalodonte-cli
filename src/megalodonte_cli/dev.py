@@ -89,7 +89,7 @@ def agent_jar(description: dict) -> Path:
             manifest = jar.read('META-INF/MANIFEST.MF').decode('utf-8')
             if 'Premain-Class: megalodonte.application.reload.ReloadAgent' in manifest:
                 return path
-    raise ValueError('Update/publish megalodonte-base locally: its JAR must contain ReloadAgent')
+    raise ValueError('Update/publish megalodonte-base-desktop locally: its JAR must contain ReloadAgent')
 
 
 def launch_command(description: dict, session: Path) -> list[str]:
