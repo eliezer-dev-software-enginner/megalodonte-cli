@@ -85,8 +85,12 @@ class NewApplicationTests(unittest.TestCase):
             for mode in ("native", "jsonc"):
                 app = MODULE.create(f"android-{mode}", mode, f"Android {mode}", root, platform="android")
                 settings = (app / "settings.gradle.kts").read_text()
+                root_build = (app / "build.gradle.kts").read_text()
                 build = (app / "app/build.gradle.kts").read_text()
+                wrapper = (app / "gradle/wrapper/gradle-wrapper.properties").read_text()
                 self.assertIn('include(":app", ":megalodonte-base-android", ":megalodonte-bridge-android")', settings)
+                self.assertIn('version "8.12.0"', root_build)
+                self.assertIn("gradle-8.13-bin.zip", wrapper)
                 self.assertIn('id("com.android.application")', build)
                 self.assertIn('implementation(project(":megalodonte-base-android"))', build)
                 self.assertNotIn('implementation("org.openjfx', build)

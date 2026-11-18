@@ -21,6 +21,8 @@ from xml.sax.saxutils import escape
 ASSETS = files("megalodonte_cli").joinpath("assets")
 SKILL_NAME = "megalodonte-native-ui"
 SKILL_NAMES = (SKILL_NAME, "criterioso")
+ANDROID_GRADLE_PLUGIN_VERSION = "8.12.0"
+ANDROID_GRADLE_VERSION = "8.13"
 
 
 
@@ -641,12 +643,12 @@ includeBuild(framework.resolve("../libraries/megalodonte-core"))
 includeBuild(framework.resolve("../libraries/megalodonte-theme"))
 includeBuild(framework.resolve("../libraries/megalodonte-reactivity-portable"))''')
 
-        write(root / "build.gradle.kts", '''plugins {
+        write(root / "build.gradle.kts", f'''plugins {{
 
-    id("com.android.application") version "9.0.1" apply false
+    id("com.android.application") version "{ANDROID_GRADLE_PLUGIN_VERSION}" apply false
 
-    id("com.android.library") version "9.0.1" apply false
-}''')
+    id("com.android.library") version "{ANDROID_GRADLE_PLUGIN_VERSION}" apply false
+}}''')
 
         write(root / "app/build.gradle.kts", f'''plugins {{ id("com.android.application") }}
 android {{
@@ -789,6 +791,10 @@ public final class HomeScreen implements ScreenComponent {{
 
         shutil.copytree(ASSETS / "gradle/wrapper", root / "gradle/wrapper")
 
+        android_wrapper = (root / "gradle/wrapper/gradle-wrapper.properties")
+        write(android_wrapper, android_wrapper.read_text(encoding="utf-8").replace(
+            "gradle-9.2.0-bin.zip", f"gradle-{ANDROID_GRADLE_VERSION}-bin.zip"))
+
         write(root / "README.md", f'''<p align="center">
 
   <img src="docs/images/megalodonte-logo.png" width="180" alt="Megalodonte logo">
@@ -804,7 +810,9 @@ The [Android client API](https://github.com/eliezer-dev-software-enginner/megalo
 documents native screens, reactive state and lists, and `UI.runOnUi` for work that
 returns from background threads.
 
-Install JDK 25 and Android SDK Platform 35. Clone `megalodonte-android`,
+Install JDK 17 and Android SDK Platform 35. Android projects use AGP
+{ANDROID_GRADLE_PLUGIN_VERSION} with Gradle {ANDROID_GRADLE_VERSION}; configure
+Android Studio's Gradle JDK as 17. Clone `megalodonte-android`,
 `megalodonte-core`, `megalodonte-theme`, and `megalodonte-reactivity-portable`
 under this project's `framework/` directory, or set
 `MEGALODONTE_ANDROID_HOME` to the Android framework checkout. Then run:
