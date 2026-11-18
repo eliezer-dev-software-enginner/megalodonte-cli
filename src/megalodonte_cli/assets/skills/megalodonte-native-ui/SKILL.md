@@ -73,6 +73,10 @@ Para saídas extensas, logs ou análise de código, use o context-mode quando el
 
 Construa a árvore de componentes de forma declarativa. `render()` e as fábricas de componentes retornam a expressão composta, com `children(...)` ou APIs reativas da biblioteca. Não monte uma árvore por etapas com variáveis de componentes, `getChildren().add(...)` ou `clear()` para depois retorná-la. Uma variável local pode representar um valor ou uma condição; não deve ser o mecanismo normal de montagem da UI.
 
+Trate a árvore como uma projeção do estado, inclusive quando os dados chegam de forma assíncrona. Prefira `State`, `ComputedState`, `ListState`, `Show.when(...)` e `ForEachState` para expressar carregamento, visibilidade, filtros e listas. O serviço ou a ViewModel atualiza os estados; a composição apenas descreve quais componentes Megalodonte aparecem para cada estado. Não replique esse mecanismo com `Platform.runLater`, listeners de propriedades JavaFX, flags mutáveis, `setVisible`/`setManaged` e inclusão ou remoção manual de filhos.
+
+Por exemplo, uma seção remota que só deve existir após o carregamento pode retornar `Show.when(carregado, () -> new Row().items(ForEachState.of(itens, Components::card), 10))`. O exemplo representa o princípio, não uma assinatura universal: confira a API real e mantenha tratamento de falhas, cache e ciclo de vida na camada dona dos dados. Evite pré-carregar `javafx.scene.image.Image` na tela apenas para controlar sua revelação; use o componente Megalodonte de imagem e, se ele ainda não expuser estado de carregamento ou erro necessário ao produto, evolua o componente compartilhado.
+
 ```java
 private final State<String> nome = State.of("");
 
@@ -87,6 +91,8 @@ private final State<String> nome = State.of("");
 Declare `State`, `ListState` e estados derivados como campos no topo da classe dona do estado, antes dos métodos. Não crie `State` dentro de `render()` ou de fábricas chamadas pela renderização: uma nova renderização perderia o valor e as inscrições. Se a tela acumular muitos estados, cálculos, carregamento ou ações, transfira essa lógica para uma `ViewModel`; a tela recebe a ViewModel e apenas descreve a árvore. Use binding e componentes reativos para mudanças de dados e coleções, em vez de alterar manualmente os filhos da árvore.
 
 Não chame `getJavaFxNode()` em código de aplicativo, inclusive para estilo, foco, seleção, eventos, tamanho ou inserção de filhos. Não instancie `javafx.scene.control` nem `javafx.scene.layout` em telas. Se a API de um componente não expõe uma operação necessária, avalie a possibilidade de expressá-la com `State` ou `Props`; se faltar uma capacidade reutilizável, implemente-a na biblioteca e consuma a nova API. JavaFX permanece dentro das bibliotecas como detalhe de implementação.
+
+Ao revisar uma UI, complexidade acidental é um sinal arquitetural: uma classe que mantém `VBox`/`HBox`/`FlowPane`, converte componentes com `CreateFromJavaFxNode`, cria `Label`/`ImageView`, injeta CSS inline, registra listeners e limpa filhos no `close()` provavelmente está reimplementando composição e reatividade fora do Megalodonte. Compare-a com uma fábrica declarativa que recebe estados e dados e retorna `Component`; prefira a segunda quando preserva o comportamento. Só mantenha a ponte JavaFX quando houver uma lacuna concreta e localizada na biblioteca, documentando-a e abrindo caminho para mover a capacidade reutilizável ao componente compartilhado.
 
 Para abrir links externos no navegador, use `megalodonte.base.Redirect.to(url)` ou `Redirect.to(url, onError)`. Não use `Desktop.getDesktop().browse(...)`, `URI.create(...)` nem crie threads na tela para essa finalidade; `Redirect` já encapsula a abertura assíncrona. O callback de erro é executado fora da thread de UI: se ele apresentar um alerta ou atualizar estado visual, encaminhe essa parte por `UI.runOnUi(...)`.
 
