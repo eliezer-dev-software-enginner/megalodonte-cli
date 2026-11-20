@@ -95,6 +95,7 @@ class NewApplicationTests(unittest.TestCase):
                 self.assertIn("gradle-8.13-bin.zip", wrapper)
                 self.assertIn('id("com.android.application")', build)
                 self.assertIn('implementation(project(":megalodonte-base-android"))', build)
+                self.assertIn("android.useAndroidX=true", (app / "gradle.properties").read_text())
                 self.assertNotIn('implementation("org.openjfx', build)
                 self.assertFalse((app / "packaging.toml").exists())
                 workflow = (app / ".github/workflows/android.yml").read_text()

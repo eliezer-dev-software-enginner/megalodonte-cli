@@ -71,6 +71,20 @@ Ao evoluir APIs equivalentes entre plataformas, coloque no `megalodonte-core` ap
 
 Em Android, listas reativas combinam `ListState` (que é um `ReadableState<List<T>>`) com `Column.items(...)` ou `Row.items(...)` e um mapper que devolve uma instância nova por item; cada mudança recria as views do bloco, sem reconciliação nem preservação de foco. Alterações de `State`/`ListState` devem ocorrer na thread principal: ao retornar de thread de fundo, executor ou callback assíncrono, encaminhe a atualização por `megalodonte.base.UI.runOnUi(...)`, que usa o `Handler` do looper principal e executa na hora quando já está nele. A bridge recusa comandos fora da thread principal. Prefira preencher estados em `onMount()`, quando as assinaturas já estão ativas, e consulte `docs/CLIENT_API.md` do `megalodonte-android` para a API real da plataforma.
 
+Ao adicionar AndroidX ou Material Components a um módulo do framework Android,
+habilite também `android.useAndroidX=true` no `gradle.properties` de cada projeto
+consumidor afetado e no modelo Android do `megalodonte-cli`. A propriedade do
+checkout do framework não se propaga ao build raiz que inclui seus módulos.
+Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
+framework não detecta essa ausência.
+
+Ao adicionar AndroidX ou Material Components a um módulo do framework Android,
+habilite também `android.useAndroidX=true` no `gradle.properties` de cada projeto
+consumidor afetado e no modelo Android do `megalodonte-cli`. A propriedade do
+checkout do framework não se propaga ao build raiz que inclui seus módulos.
+Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
+framework não detecta essa ausência.
+
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
 
 Construa a árvore de componentes de forma declarativa. `render()` e as fábricas de componentes retornam a expressão composta, com `children(...)` ou APIs reativas da biblioteca. Não monte uma árvore por etapas com variáveis de componentes, `getChildren().add(...)` ou `clear()` para depois retorná-la. Uma variável local pode representar um valor ou uma condição; não deve ser o mecanismo normal de montagem da UI.

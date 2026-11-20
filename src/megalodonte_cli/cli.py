@@ -706,7 +706,7 @@ val verifyAndroidDependencies = tasks.register("verifyAndroidDependencies") {{
 }}
 tasks.named("check") {{ dependsOn(verifyAndroidDependencies) }}''')
 
-        write(root / "gradle.properties", "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8")
+        write(root / "gradle.properties", "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8\nandroid.useAndroidX=true")
 
         write(root / ".gitignore", ".gradle/\nbuild/\napp/build/\nlocal.properties\n.idea/\n*.iml")
 
