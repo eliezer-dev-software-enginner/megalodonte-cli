@@ -78,12 +78,12 @@ checkout do framework não se propaga ao build raiz que inclui seus módulos.
 Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
 framework não detecta essa ausência.
 
-Ao adicionar AndroidX ou Material Components a um módulo do framework Android,
-habilite também `android.useAndroidX=true` no `gradle.properties` de cada projeto
-consumidor afetado e no modelo Android do `megalodonte-cli`. A propriedade do
-checkout do framework não se propaga ao build raiz que inclui seus módulos.
-Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
-framework não detecta essa ausência.
+No Android, `megalodonte.components.Switch` mantém o construtor desktop
+`Switch(String accessibleLabel, State<Boolean>)` e usa um `MaterialSwitch`
+nativo. Use-o para ativar ou desativar imediatamente uma configuração ou recurso;
+use `Checkbox` para seleção/confirmação quando a mudança não representa um toggle
+imediato. O primeiro argumento do `Switch` é descrição acessível, não texto
+visível: componha um `Text` próximo quando a tela precisar exibir uma legenda.
 
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
 
