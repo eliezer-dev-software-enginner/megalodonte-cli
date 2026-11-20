@@ -84,6 +84,10 @@ nativo. Use-o para ativar ou desativar imediatamente uma configuração ou recur
 use `Checkbox` para seleção/confirmação quando a mudança não representa um toggle
 imediato. O primeiro argumento do `Switch` é descrição acessível, não texto
 visível: componha um `Text` próximo quando a tela precisar exibir uma legenda.
+Para efeitos decorrentes do toque, encadeie
+`.onCheckedChange(currentState -> ...)`: o callback recebe o novo valor depois
+que o `State<Boolean>` foi atualizado. Mudanças programáticas no `State` devem
+atualizar o controle sem executar esse callback de interação do usuário.
 
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
 
