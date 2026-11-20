@@ -84,6 +84,9 @@ para ativar ou desativar imediatamente uma configuração ou recurso; use
 `Checkbox` para seleção/confirmação quando a mudança não representa um toggle
 imediato. O primeiro argumento do `Switch` é o rótulo visível junto ao controle e
 também sua descrição acessível; não duplique a legenda com um `Text` separado.
+O rótulo usa `theme.colors().textPrimary()` por padrão; personalize um caso
+específico com `new SwitchProps().textColor(...).fontSize(...)`, sem acessar o
+widget Android nativo.
 Para efeitos decorrentes do toque, encadeie
 `.onCheckedChange(currentState -> ...)`: o callback recebe o novo valor depois
 que o `State<Boolean>` foi atualizado. Mudanças programáticas no `State` devem
