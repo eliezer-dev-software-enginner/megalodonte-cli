@@ -79,11 +79,11 @@ Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
 framework não detecta essa ausência.
 
 No Android, `megalodonte.components.Switch` mantém o construtor desktop
-`Switch(String accessibleLabel, State<Boolean>)` e usa um `MaterialSwitch`
-nativo. Use-o para ativar ou desativar imediatamente uma configuração ou recurso;
-use `Checkbox` para seleção/confirmação quando a mudança não representa um toggle
-imediato. O primeiro argumento do `Switch` é descrição acessível, não texto
-visível: componha um `Text` próximo quando a tela precisar exibir uma legenda.
+`Switch(String label, State<Boolean>)` e usa um `MaterialSwitch` nativo. Use-o
+para ativar ou desativar imediatamente uma configuração ou recurso; use
+`Checkbox` para seleção/confirmação quando a mudança não representa um toggle
+imediato. O primeiro argumento do `Switch` é o rótulo visível junto ao controle e
+também sua descrição acessível; não duplique a legenda com um `Text` separado.
 Para efeitos decorrentes do toque, encadeie
 `.onCheckedChange(currentState -> ...)`: o callback recebe o novo valor depois
 que o `State<Boolean>` foi atualizado. Mudanças programáticas no `State` devem
