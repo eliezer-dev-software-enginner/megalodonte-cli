@@ -134,6 +134,14 @@ Use os valores e padrões do tema via `ThemeManager` e `Props`. Preserve as core
 
 Não guarde `Column`, `Row`, `Container`, `Stack` ou outro componente como campo da tela. Se uma operação imperativa for realmente inevitável e não puder ser modelada por estado, guarde `Ref<T>` como campo e vincule a referência ao componente criado na árvore. `Ref` é exceção para casos como foco; não é substituto de `State` nem justificativa para manter uma árvore mutável.
 
+`State.subscribe(...)` e `ListState.subscribe(...)` notificam imediatamente com
+o valor atual. Não acesse nesse callback uma `Ref` que só será preenchida pelo
+`render()`: durante o construtor ela ainda será nula. Também não use
+`ref.current().children(...)` para trocar uma subárvore já montada, pois mutar o
+modelo não solicita reconciliação à bridge. Expresse a troca com componentes
+reativos suportados, como `Show.when(...)` ou `Column.items(ListState, mapper)`;
+para uma única tela dinâmica, uma lista com um item pode representar o ramo atual.
+
 Coloque composições reutilizáveis em uma classe `Components` com métodos de fábrica `static` que recebem estado, dados e callbacks e **retornam** o componente pronto. Não mantenha componentes mutáveis globais nessa classe. Separe lógica de domínio, serviços e ViewModel da composição da UI.
 
 Ao criar ou alterar interfaces, mantenha a documentação do projeto atualizada durante o trabalho, sem esperar solicitação: registre comportamento implementado, decisões, limitações e próximos passos nos arquivos `docs/CONTEXT.md`, `docs/DECISIONS.md` e `docs/TODO.md` quando adotados pelo projeto; atualize também a documentação de uso afetada. Não apresente funcionalidade planejada ou parcial como concluída.
