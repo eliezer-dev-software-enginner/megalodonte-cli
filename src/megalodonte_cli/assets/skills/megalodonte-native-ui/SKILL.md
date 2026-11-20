@@ -89,6 +89,13 @@ Para efeitos decorrentes do toque, encadeie
 que o `State<Boolean>` foi atualizado. Mudanças programáticas no `State` devem
 atualizar o controle sem executar esse callback de interação do usuário.
 
+No renderer Android, wrappers condicionais como `Show.when` não devem envolver
+uma `Column` em `WRAP_CONTENT` quando seus inputs ou botões usam largura
+`MATCH_PARENT`: isso colapsa a largura interna, preserva somente a altura e
+aparece como espaço branco. O `Show` dentro de uma `Column` e seu ramo renderizado
+devem preencher a largura disponível; dentro de uma `Row`, preserve largura de
+conteúdo salvo configuração explícita.
+
 Para saídas extensas, logs ou análise de código, use o context-mode quando ele realmente reduzir o contexto necessário; para consultas curtas, prefira buscas diretas e concisas. A preferência e as salvaguardas estão na skill `criterioso`.
 
 Construa a árvore de componentes de forma declarativa. `render()` e as fábricas de componentes retornam a expressão composta, com `children(...)` ou APIs reativas da biblioteca. Não monte uma árvore por etapas com variáveis de componentes, `getChildren().add(...)` ou `clear()` para depois retorná-la. Uma variável local pode representar um valor ou uma condição; não deve ser o mecanismo normal de montagem da UI.
