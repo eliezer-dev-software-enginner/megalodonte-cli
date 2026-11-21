@@ -78,6 +78,13 @@ checkout do framework não se propaga ao build raiz que inclui seus módulos.
 Valide o aplicativo consumidor e um projeto recém-gerado; compilar apenas o
 framework não detecta essa ausência.
 
+Nos workflows Android, use `android-actions/setup-android@v4` e instale
+explicitamente a plataforma e o build-tools requeridos com `sdkmanager`. Não
+reintroduza a v3: em runners atuais ela pode tentar instalar implicitamente o
+pacote obsoleto `tools` e falhar antes de executar o Gradle. Ao corrigir um
+projeto antigo, confira também o template do `megalodonte-cli` para que projetos
+novos não repitam a configuração defeituosa.
+
 No Android, `megalodonte.components.Switch` mantém o construtor desktop
 `Switch(String label, State<Boolean>)` e usa um `MaterialSwitch` nativo. Use-o
 para ativar ou desativar imediatamente uma configuração ou recurso; use
