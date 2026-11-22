@@ -139,6 +139,18 @@ private final ListState<Categoria> categorias = ListState.ofEmpty();
 
 Não chame `getJavaFxNode()` em código de aplicativo, inclusive para estilo, foco, seleção, eventos, tamanho ou inserção de filhos. Não instancie `javafx.scene.control` nem `javafx.scene.layout` em telas. Se a API de um componente não expõe uma operação necessária, avalie a possibilidade de expressá-la com `State` ou `Props`; se faltar uma capacidade reutilizável, implemente-a na biblioteca e consuma a nova API. JavaFX permanece dentro das bibliotecas como detalhe de implementação.
 
+Em desktop, telas dedicadas de quiosque, mídia ou PDV que devam sempre ocupar o
+monitor usam o metadado de rota `new RouteProps(width, height, title, resizable,
+true)`. Não acesse `ScreenContext.selfStage()` apenas para chamar
+`Stage.setFullScreen(...)`: o roteamento deve aplicar e restaurar o modo da
+janela, inclusive na rota inicial, na navegação e após reinícios do live reload.
+
+Em desktop, telas dedicadas de quiosque, mídia ou PDV que devam sempre ocupar o
+monitor usam o metadado de rota `new RouteProps(width, height, title, resizable,
+true)`. Não acesse `ScreenContext.selfStage()` apenas para chamar
+`Stage.setFullScreen(...)`: o roteamento deve aplicar e restaurar o modo da
+janela, inclusive na rota inicial, na navegação e após reinícios do live reload.
+
 Ao revisar uma UI, complexidade acidental é um sinal arquitetural: uma classe que mantém `VBox`/`HBox`/`FlowPane`, converte componentes com `CreateFromJavaFxNode`, cria `Label`/`ImageView`, injeta CSS inline, registra listeners e limpa filhos no `close()` provavelmente está reimplementando composição e reatividade fora do Megalodonte. Compare-a com uma fábrica declarativa que recebe estados e dados e retorna `Component`; prefira a segunda quando preserva o comportamento. Só mantenha a ponte JavaFX quando houver uma lacuna concreta e localizada na biblioteca, documentando-a e abrindo caminho para mover a capacidade reutilizável ao componente compartilhado.
 
 Para abrir links externos no navegador, use `megalodonte.base.Redirect.to(url)` ou `Redirect.to(url, onError)`. Não use `Desktop.getDesktop().browse(...)`, `URI.create(...)` nem crie threads na tela para essa finalidade; `Redirect` já encapsula a abertura assíncrona. O callback de erro é executado fora da thread de UI: se ele apresentar um alerta ou atualizar estado visual, encaminhe essa parte por `UI.runOnUi(...)`.
