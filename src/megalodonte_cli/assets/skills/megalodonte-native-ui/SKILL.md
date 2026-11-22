@@ -219,4 +219,10 @@ Editar/Cancelar como delineada e Excluir como delineada de perigo. Estenda o
 mesmo padrão a ações semanticamente equivalentes, preservando botões de
 navegação com identidade visual própria quando houver decisão de design.
 
+Ações destrutivas disparadas por tabelas ou listagens devem validar a seleção e
+pedir confirmação explícita em diálogo antes de alterar a persistência. O botão
+Cancelar do diálogo não pode chamar ViewModel, serviço ou repositório. Evite
+abrir confirmação quando nada está selecionado; nesse caso, mostre diretamente
+a orientação de seleção já definida pela tela.
+
 Não tire capturas de tela para conferir a interface, salvo pedido explícito do usuário. Antes de concluir, revise os arquivos de tela em busca de `getJavaFxNode`, `getChildren().add`, controles JavaFX nativos, CSS inline, `State.of` dentro de `render()` e campos de componentes. Se algum caso excepcional permanecer, explique-o explicitamente e não declare a tela conforme ao padrão.
