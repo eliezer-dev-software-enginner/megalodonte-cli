@@ -201,4 +201,14 @@ Ao corrigir um campo ou componente, busque usos equivalentes no aplicativo e nos
 
 Em campos brasileiros formatados, use `pack.utilities.FormatterPack` como fonte das máscaras (CPF, CNPJ, CPF/CNPJ, CEP, telefone e moeda) por meio dos componentes existentes. Se faltar um campo reutilizável, implemente-o na biblioteca adequada usando o mesmo `FormatterPack`, em vez de duplicar a máscara na tela. Confira o contrato do `State`: alguns componentes guardam o valor sem pontuação, e `InputColumnCurrency` guarda centavos. Adapte o valor ao modelo de domínio quando necessário, sem alterar silenciosamente seu significado.
 
+Em aplicativos desktop que já dependem de `disgust-components`, use
+`InputsPack`, `disgust.io.Pack` e `disgust.io.br.Pack` como entrada padrão dos
+campos de formulário. Escolha o componente pelo significado do dado: texto
+livre, inteiro, decimal, data, CPF/CNPJ, telefone ou CEP. Não use um `Input`
+genérico para quantidade, valor ou data e tente corrigir somente no `salvar`;
+o componente deve impedir caracteres incompatíveis enquanto o usuário digita.
+Para opções carregadas de forma assíncrona, preserve o `ListState`/`ReadableState`
+no select em vez de capturar uma lista estática. Não aplique máscaras a campos
+que semanticamente continuam sendo texto livre.
+
 Não tire capturas de tela para conferir a interface, salvo pedido explícito do usuário. Antes de concluir, revise os arquivos de tela em busca de `getJavaFxNode`, `getChildren().add`, controles JavaFX nativos, CSS inline, `State.of` dentro de `render()` e campos de componentes. Se algum caso excepcional permanecer, explique-o explicitamente e não declare a tela conforme ao padrão.
