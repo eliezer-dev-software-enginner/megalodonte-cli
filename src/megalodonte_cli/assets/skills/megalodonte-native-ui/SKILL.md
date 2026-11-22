@@ -211,6 +211,14 @@ Para opções carregadas de forma assíncrona, preserve o `ListState`/`ReadableS
 no select em vez de capturar uma lista estática. Não aplique máscaras a campos
 que semanticamente continuam sendo texto livre.
 
+Um `Switch` deve exibir trilho arredondado e polegar móvel reais, nunca glifos
+de texto para representar ligado/desligado. Mantenha o rótulo visível e
+acessível no próprio componente, sem duplicá-lo com um `Text` externo. Em
+formulários horizontais, não envolva inputs de largura preferida/fixa em filhos
+com `fillWidth()`: isso cria grandes vazios entre campos sem ampliar o controle.
+Use uma largura padrão comum para campos equivalentes e deixe `Row`/`FlowRow`
+controlar espaçamento e quebra.
+
 Em tabelas, formate a projeção visual de documentos, telefones, CEP, datas,
 moedas e decimais com os formatadores compartilhados, sem alterar o valor bruto
 do domínio ou da persistência. Em aplicativos com `disgust-components`, ações
