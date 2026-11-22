@@ -127,6 +127,16 @@ private final State<String> nome = State.of("");
 
 Declare `State`, `ListState` e estados derivados como campos no topo da classe dona do estado, antes dos métodos. Não crie `State` dentro de `render()` ou de fábricas chamadas pela renderização: uma nova renderização perderia o valor e as inscrições. Se a tela acumular muitos estados, cálculos, carregamento ou ações, transfira essa lógica para uma `ViewModel`; a tela recebe a ViewModel e apenas descreve a árvore. Use binding e componentes reativos para mudanças de dados e coleções, em vez de alterar manualmente os filhos da árvore.
 
+Para coleções reativas, use sempre `ListState<T>` em vez de
+`State<List<T>>`. Inicialize coleções vazias com `ListState.ofEmpty()` e use
+`ListState.of(lista)` quando houver valores iniciais. Além de tornar explícita a
+semântica de coleção, isso preserva as operações reativas próprias de lista e
+mantém o mesmo padrão entre desktop e Android.
+
+```java
+private final ListState<Categoria> categorias = ListState.ofEmpty();
+```
+
 Não chame `getJavaFxNode()` em código de aplicativo, inclusive para estilo, foco, seleção, eventos, tamanho ou inserção de filhos. Não instancie `javafx.scene.control` nem `javafx.scene.layout` em telas. Se a API de um componente não expõe uma operação necessária, avalie a possibilidade de expressá-la com `State` ou `Props`; se faltar uma capacidade reutilizável, implemente-a na biblioteca e consuma a nova API. JavaFX permanece dentro das bibliotecas como detalhe de implementação.
 
 Ao revisar uma UI, complexidade acidental é um sinal arquitetural: uma classe que mantém `VBox`/`HBox`/`FlowPane`, converte componentes com `CreateFromJavaFxNode`, cria `Label`/`ImageView`, injeta CSS inline, registra listeners e limpa filhos no `close()` provavelmente está reimplementando composição e reatividade fora do Megalodonte. Compare-a com uma fábrica declarativa que recebe estados e dados e retorna `Component`; prefira a segunda quando preserva o comportamento. Só mantenha a ponte JavaFX quando houver uma lacuna concreta e localizada na biblioteca, documentando-a e abrindo caminho para mover a capacidade reutilizável ao componente compartilhado.
