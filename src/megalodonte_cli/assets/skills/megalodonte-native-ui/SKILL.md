@@ -211,4 +211,12 @@ Para opções carregadas de forma assíncrona, preserve o `ListState`/`ReadableS
 no select em vez de capturar uma lista estática. Não aplique máscaras a campos
 que semanticamente continuam sendo texto livre.
 
+Em tabelas, formate a projeção visual de documentos, telefones, CEP, datas,
+moedas e decimais com os formatadores compartilhados, sem alterar o valor bruto
+do domínio ou da persistência. Em aplicativos com `disgust-components`, ações
+recorrentes devem usar `ButtonsPack` e ícones: Novo/Salvar como ação contida,
+Editar/Cancelar como delineada e Excluir como delineada de perigo. Estenda o
+mesmo padrão a ações semanticamente equivalentes, preservando botões de
+navegação com identidade visual própria quando houver decisão de design.
+
 Não tire capturas de tela para conferir a interface, salvo pedido explícito do usuário. Antes de concluir, revise os arquivos de tela em busca de `getJavaFxNode`, `getChildren().add`, controles JavaFX nativos, CSS inline, `State.of` dentro de `render()` e campos de componentes. Se algum caso excepcional permanecer, explique-o explicitamente e não declare a tela conforme ao padrão.
