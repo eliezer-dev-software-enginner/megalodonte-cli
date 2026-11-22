@@ -161,6 +161,15 @@ para uma única tela dinâmica, uma lista com um item pode representar o ramo at
 
 Coloque composições reutilizáveis em uma classe `Components` com métodos de fábrica `static` que recebem estado, dados e callbacks e **retornam** o componente pronto. Não mantenha componentes mutáveis globais nessa classe. Separe lógica de domínio, serviços e ViewModel da composição da UI.
 
+Em projetos que usam ORM ou mapper relacional, mantenha as classes de
+persistência em um pacote explícito `entities` (por exemplo,
+`app.data.entities`), separado dos records ou modelos de domínio exibidos na
+UI. Para entidades JavaBean com muitos campos, prefira Lombok `@Getter` e
+`@Setter` a accessors mecânicos escritos à mão, desde que o projeto já use
+Lombok. Preserve o mecanismo de migrations existente: não substitua Flyway por
+`CREATE TABLE IF NOT EXISTS` espalhado no código nem troque Persism por JDBC
+manual durante uma migração de UI sem uma decisão arquitetural explícita.
+
 Ao criar ou alterar interfaces, mantenha a documentação do projeto atualizada durante o trabalho, sem esperar solicitação: registre comportamento implementado, decisões, limitações e próximos passos nos arquivos `docs/CONTEXT.md`, `docs/DECISIONS.md` e `docs/TODO.md` quando adotados pelo projeto; atualize também a documentação de uso afetada. Não apresente funcionalidade planejada ou parcial como concluída.
 
 Quando a UI expõe uma sintaxe, ação ou estado pouco óbvio, explique-a junto ao controle com texto ou tooltip. Tooltips devem esclarecer o efeito do controle no contexto atual, sem substituir um exemplo completo no README. Confira a interface com os dados realmente carregados; a existência de um fluxo no repositório não demonstra que ele aparece na tela. Ao compartilhar recursos entre desktop e Android, compare os valores de tema e configuração efetivamente usados nas duas plataformas, respeitando as APIs de cada uma.
