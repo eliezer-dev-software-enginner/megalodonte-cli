@@ -144,12 +144,10 @@ monitor usam o metadado de rota `new RouteProps(width, height, title, resizable,
 true)`. Não acesse `ScreenContext.selfStage()` apenas para chamar
 `Stage.setFullScreen(...)`: o roteamento deve aplicar e restaurar o modo da
 janela, inclusive na rota inicial, na navegação e após reinícios do live reload.
-
-Em desktop, telas dedicadas de quiosque, mídia ou PDV que devam sempre ocupar o
-monitor usam o metadado de rota `new RouteProps(width, height, title, resizable,
-true)`. Não acesse `ScreenContext.selfStage()` apenas para chamar
-`Stage.setFullScreen(...)`: o roteamento deve aplicar e restaurar o modo da
-janela, inclusive na rota inicial, na navegação e após reinícios do live reload.
+Quando a própria interface permitir sair e voltar à tela cheia, use
+`ScreenContextInterface.toggleFullScreen()` (ou `setFullScreen(boolean)`) no
+callback do botão; não manipule o `Stage` diretamente. O metadado da rota define
+o modo inicial, enquanto o contexto representa a ação explícita do usuário.
 
 Ao revisar uma UI, complexidade acidental é um sinal arquitetural: uma classe que mantém `VBox`/`HBox`/`FlowPane`, converte componentes com `CreateFromJavaFxNode`, cria `Label`/`ImageView`, injeta CSS inline, registra listeners e limpa filhos no `close()` provavelmente está reimplementando composição e reatividade fora do Megalodonte. Compare-a com uma fábrica declarativa que recebe estados e dados e retorna `Component`; prefira a segunda quando preserva o comportamento. Só mantenha a ponte JavaFX quando houver uma lacuna concreta e localizada na biblioteca, documentando-a e abrindo caminho para mover a capacidade reutilizável ao componente compartilhado.
 
@@ -201,6 +199,11 @@ Modele a interface a partir do estado real: uma ação iniciar/parar deve ter um
 Em tabelas, Esc pode limpar a seleção, mas não limpe globalmente ao clicar fora: botões de ação também ficam fora da tabela e precisam ler o item selecionado. Exponha `clearSelection()` na biblioteca e use uma ação ou região neutra explícita quando a tela precisar desmarcar; `Ref<SimpleTable>` permite que essa região acesse a instância renderizada sem chamar `getJavaFxNode()`. Para listagens longas, use a paginação da tabela existente; filtre o conjunto completo antes de paginar e mantenha os controles de navegação junto à tabela. Ao atualizar os dados, ajuste a página atual se ela deixar de existir e valide seleção, pesquisa e ações sobre o item visível.
 
 Geração de PDF, acesso a disco pesado, rede e abertura de arquivos ou aplicativos externos não devem executar na thread JavaFX. Faça uma cópia dos dados necessários antes de iniciar o trabalho em segundo plano; retorne alertas e mudanças visuais por `UI.runOnUi(...)`. Um visualizador externo pode bloquear ou faltar no sistema: registre o caminho do arquivo e a falha, e ofereça uma mensagem compreensível ao usuário. Se o usuário pedir teste visual, teste o fluxo pelo clique real quando houver ambiente gráfico; compilação e teste da função de exportação isolada não demonstram que a janela continua responsiva.
+Em aplicações Megalodonte que dependem de `pack-utilities`, gere PDFs orientados
+a dados com `pack.utilities.pdf.DataPdf` e um template JSONC versionado em
+`src/main/resources/pdf`. Mapeie o domínio para dados simples e mantenha layout,
+fontes, tabelas e repetições no template; não reintroduza uma classe que desenha
+o documento manualmente nem use uma API de PDF de baixo nível na tela.
 
 
 Antes de adicionar um componente desktop, procure equivalentes em `megalodonte-components-desktop` e `disgust-components` e confira a API atual no código-fonte. Componentes gerais de layout, entrada e dados pertencem ao artefato de componentes da plataforma; identidade visual e controles específicos de Disgust pertencem a `disgust-components`. Crie a peça faltante na biblioteca adequada e use-a na aplicação. Preserve o comportamento e os dados existentes durante uma refatoração.

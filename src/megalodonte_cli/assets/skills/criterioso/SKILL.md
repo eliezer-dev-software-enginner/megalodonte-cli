@@ -29,6 +29,11 @@ Separe mecanismos genéricos de regras do produto. Um editor ou gerador não dev
 
 Procure usos equivalentes do comportamento defeituoso e corrija os afetados, respeitando diferenças de domínio. Prefira bibliotecas e componentes existentes, verificando a API real antes de usá-la. Ao mudar uma biblioteca consumida localmente, execute seus testes, publique em Maven Local quando esse for o mecanismo de consumo, e confira o artefato atualizado no projeto-alvo. Não rode novamente testes de outras aplicações sem pedido explícito do usuário. `includeBuild` e compilação da fonte não provam que o aplicativo instalado recebeu a mudança.
 
+Quando o ecossistema já possui uma biblioteca orientada a dados para um artefato
+como PDF, reutilize-a e siga o consumidor canônico antes de criar outro gerador.
+No Megalodonte com `pack-utilities`, isso significa `DataPdf` mais template JSONC
+versionado; lógica de domínio prepara dados, enquanto o template controla layout.
+
 Para cores, estilos e capacidades de terminal em CLIs Python, prefira uma
 biblioteca mantida e multiplataforma, como Rich, em vez de sequências ANSI
 implementadas manualmente. Preserve saída limpa quando redirecionada e respeite
