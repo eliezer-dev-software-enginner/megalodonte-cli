@@ -237,7 +237,9 @@ filtre somente seu texto de apresentação.
 No tema escuro, estilize também o editor interno desse controle e remova a área
 legada separada do botão de seta quando o modo pesquisável já oferece abertura
 pelo campo. Se a busca não produzir opções, feche o popup em vez de exibir uma
-lista branca vazia.
+lista branca vazia. Quando o produto quiser manter um indicador de dropdown,
+use `Select.dropdownIcon(Component)` com um ícone criado pela família visual do
+aplicativo; a biblioteca genérica não deve depender diretamente de Feather.
 
 Modais de formulário devem fechar por `Esc`, pelo botão de fechar e pela ação
 Cancelar. Implemente `Esc` no componente `Modal` compartilhado, consumindo o
