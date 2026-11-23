@@ -234,15 +234,15 @@ ou `new SelectProps().searchable()`. A busca pertence ao
 não crie um controle específico no aplicativo nem o coloque no Disgust apenas
 por causa do estilo visual. Preserve o objeto tipado como valor selecionado e
 filtre somente seu texto de apresentação.
+No tema escuro, estilize também o editor interno desse controle e remova a área
+legada separada do botão de seta quando o modo pesquisável já oferece abertura
+pelo campo. Se a busca não produzir opções, feche o popup em vez de exibir uma
+lista branca vazia.
 
-Quando uma seleção puder ter muitas opções ou precisar ser localizada por nome,
-código ou outra apresentação textual, use o modo pesquisável do componente
-genérico: `new Select<T>().items(items).value(selected).displayText(mapper).searchable()`
-ou `new SelectProps().searchable()`. A busca pertence ao
-`megalodonte-components-desktop`, pois é comportamento de entrada e seleção;
-não crie um controle específico no aplicativo nem o coloque no Disgust apenas
-por causa do estilo visual. Preserve o objeto tipado como valor selecionado e
-filtre somente seu texto de apresentação.
+Modais de formulário devem fechar por `Esc`, pelo botão de fechar e pela ação
+Cancelar. Implemente `Esc` no componente `Modal` compartilhado, consumindo o
+evento somente quando o overlay estiver visível, em vez de repetir handlers nas
+telas consumidoras.
 
 Um `Switch` deve exibir trilho arredondado e polegar móvel reais, nunca glifos
 de texto para representar ligado/desligado. Mantenha o rótulo visível e
