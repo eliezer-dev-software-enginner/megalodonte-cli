@@ -226,6 +226,24 @@ Para opções carregadas de forma assíncrona, preserve o `ListState`/`ReadableS
 no select em vez de capturar uma lista estática. Não aplique máscaras a campos
 que semanticamente continuam sendo texto livre.
 
+Quando uma seleção puder ter muitas opções ou precisar ser localizada por nome,
+código ou outra apresentação textual, use o modo pesquisável do componente
+genérico: `new Select<T>().items(items).value(selected).displayText(mapper).searchable()`
+ou `new SelectProps().searchable()`. A busca pertence ao
+`megalodonte-components-desktop`, pois é comportamento de entrada e seleção;
+não crie um controle específico no aplicativo nem o coloque no Disgust apenas
+por causa do estilo visual. Preserve o objeto tipado como valor selecionado e
+filtre somente seu texto de apresentação.
+
+Quando uma seleção puder ter muitas opções ou precisar ser localizada por nome,
+código ou outra apresentação textual, use o modo pesquisável do componente
+genérico: `new Select<T>().items(items).value(selected).displayText(mapper).searchable()`
+ou `new SelectProps().searchable()`. A busca pertence ao
+`megalodonte-components-desktop`, pois é comportamento de entrada e seleção;
+não crie um controle específico no aplicativo nem o coloque no Disgust apenas
+por causa do estilo visual. Preserve o objeto tipado como valor selecionado e
+filtre somente seu texto de apresentação.
+
 Um `Switch` deve exibir trilho arredondado e polegar móvel reais, nunca glifos
 de texto para representar ligado/desligado. Mantenha o rótulo visível e
 acessível no próprio componente, sem duplicá-lo com um `Text` externo. Em
