@@ -69,6 +69,12 @@ O commit automático não autoriza `push`, publicação, release ou deploy. Exec
 essas ações somente quando já estiverem autorizadas e respeite as regras locais
 de horário, branch e aprovação.
 
+O autor do commit é apenas o usuário configurado no Git. Não adicione autoria de
+assistente de IA em commits, tags, pull requests, releases ou changelogs: nada de
+`Co-Authored-By: Claude ...`, "Generated with Claude Code" ou linhas equivalentes,
+mesmo que a ferramenta sugira incluí-las. Antes de criar o commit, revise a mensagem
+e remova qualquer linha desse tipo.
+
 Recursos com sintaxe ou sequência não óbvia precisam de um exemplo de uso no README do projeto em uso e, se forem reutilizáveis, no modelo gerado. Na interface, use texto ou tooltip junto ao controle para explicar a ação; mostre o caminho entre clique, gatilho e resposta. Operações longas devem expor progresso, sucesso e erro também nos logs relevantes. Revise documentos antigos que contradigam o comportamento novo.
 
 Quando documentar uma correção por código, inclua o trecho completo necessário para aplicá-la, com imports e a sequência relevante de inicialização, não apenas a declaração isolada. Identifique classes que representam exemplos e preserve as configurações existentes; distinga exemplos ilustrativos daqueles que funcionam diretamente em outro modo ou plataforma.
