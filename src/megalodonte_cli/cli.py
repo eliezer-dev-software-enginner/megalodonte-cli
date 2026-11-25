@@ -276,7 +276,7 @@ def create(name: str, display_name: str, output_root: Path,
 
     dependency = "megalodonte-components-desktop:1.0.0-beta"
 
-    composite = "libraries/megalodonte-components"
+    composite = "libraries/megalodonte-components-desktop"
 
     local_build = (workspace / "framework" / composite) if workspace else None
 
@@ -881,7 +881,7 @@ jobs:
 
           repository: eliezer-dev-software-enginner/megalodonte-reactivity
 
-          path: framework/libraries/megalodonte-reactivity
+          path: framework/libraries/megalodonte-reactivity-desktop
 
       - uses: actions/setup-java@v4
 
